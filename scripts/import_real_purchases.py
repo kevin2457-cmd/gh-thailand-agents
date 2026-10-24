@@ -28,7 +28,6 @@ LEAD_TIME_DAYS = 60  # 老板确认：大约每 2 个月发一柜、到一柜
 SUPPLIER = ("S01", "US brands via Los Angeles container", "USA", LEAD_TIME_DAYS)
 
 # 标准 SKU 目录：sku, 标准英文名, 规格, 品牌, 其他写法和中文俗称
-# 带 "待确认" 注释的映射还没有经过老板确认
 CATALOG = [
     ("GH-GROW-25LB", "GH Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb"]),
     ("GH-BLOOM-25LB", "GH Bloom", "25lb", "General Hydroponics", ["GH-Bloom-25lb"]),
@@ -50,12 +49,12 @@ CATALOG = [
     ("BIG-BUD", "Big Bud", "", "Advanced Nutrients", ["Big Bud", "Bigbud"]),
     ("B52", "B52", "", "Advanced Nutrients", ["B52"]),
     ("BUD-CANDY", "Bud Candy", "", "Advanced Nutrients", ["Bud Candy", "棉花糖"]),
-    ("CLONEX-1G", "CloneX", "1 Gal", "", ["CloneX", "CloneX 1 Gal"]),  # 待确认：没写规格的 CloneX = 1 Gal？
-    ("CLONEX-GEL-1L", "CloneX Gel", "1L", "", ["CloneX GEL - 1L"]),
+    # 老板确认：CloneX 都是 1L（10 月表写的 1 Gal 也是 1L）
+    ("CLONEX-1L", "CloneX", "1L", "", ["CloneX", "CloneX 1 Gal", "CloneX GEL - 1L", "CloneX Gel"]),
     ("CUTS-14OZ", "Cuts", "14oz", "", ["Cuts-14OZ", "Cuts 14oz"]),
     ("ORIGINAL-1L", "Original", "1L", "", ["Original - 1L", "Original"]),
-    # 老板确认：Koolbloom 有液体和粉两种，lb 是粉，Gal 是液体。2/4 月表没写规格，拿货价 140（粉是 120），暂按液体，待确认规格
-    ("KOOLBLOOM-LIQUID", "Koolbloom (liquid)", "", "General Hydroponics", ["Koolbloom", "Liquid Koolbloom", "Koolbloom 液体"]),
+    # 老板确认：Koolbloom 有液体和粉两种，lb 是粉，Gal 是液体。2/4 月表没写规格的是 6gal 液体
+    ("KOOLBLOOM-6GAL", "Koolbloom (liquid)", "6gal", "General Hydroponics", ["Koolbloom", "Liquid Koolbloom", "Koolbloom 液体", "Koolbloom 6gal"]),
     ("KOOLBLOOM-16LB", "Koolbloom (powder)", "16lb", "General Hydroponics", ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
     ("CYCO-SUPA-STICKY", "Cyco Supa Sticky", "", "Cyco", ["Cyco Supa Sticky"]),
     ("MONSTER-BLOOM", "Monster Bloom", "", "General Hydroponics", ["Monster Bloom", "紫粉"]),

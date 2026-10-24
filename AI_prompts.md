@@ -46,3 +46,8 @@
 > Green J - 1L = Green Juice，Cal Mg = Cal Mg Plus：对的。
 > 2025 年 2 月到 11 月之间的货柜文件找不到了。
 > Terpinator 按洛杉矶批发价 + 10 估拿货价、售价按到岸成本 × 1.5：没问题。
+
+**Follow-up prompt 3（最后两个规格）：** 还有两个产品在 Excel 里没写规格。
+
+> 2 月和 4 月表里的 Koolbloom 是 6gal。
+> CloneX 都是 1L 的。
