@@ -45,8 +45,12 @@ CONTAINERS = [
 ]
 
 
+# 采购 Excel 里不带规格、但老板确认 Excel 都是最大规格的产品
+EXCEL_NAME_OVERRIDES = {norm(n): "GH-FLORALICIOUS-PLUS-6GAL" for n in ("Floralicious", "香味")}
+
+
 def to_sku(raw_name: str, where: str) -> str:
-    sku = lookup(raw_name)
+    sku = EXCEL_NAME_OVERRIDES.get(norm(raw_name)) or lookup(raw_name)
     if sku is None:
         raise SystemExit(f"未知产品名 {raw_name!r}（{where}）：请先加进 backend/catalog.py 的别名里，并和老板确认。")
     return sku

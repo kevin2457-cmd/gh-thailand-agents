@@ -62,3 +62,10 @@
 > 同名产品合并总数就可以，同样名字的都是同规格。
 > Big time enzyme、Silica blast、Diamond nectar、True flo、Bloom liquid plant food、CYCO silica 5gal、Weight Max 10kg 是早期货柜（缺失的那段文件）进的货：对的。
 > 采购 Excel 里有、但盘点里没出现的（Pro Grow、Pro Bloom、Balance、GH Grow、Late）：对啊卖完了，卖很快。
+
+**Follow-up prompt 6（规格和俗称）：** 照片和盘点表里的规格不一致，还有认不出的俗称。
+
+> 三朵花也是 Monster Bloom 的别名。
+> 图片只是表明品牌和名字，实际规格按我们 Excel 的。实际上我们绝大多数都是卖最大规格，除了 CloneX 以外。
+> Bio root 都是一个规格 6gal；Cal mag 都是 6gal；Overdrive 都是 6gal。
+> Floralicious：6gal 的 8 个，1gal 的 24 个，2.5gal 的我们没有。

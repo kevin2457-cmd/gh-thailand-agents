@@ -9,7 +9,8 @@ from __future__ import annotations
 import re
 
 # sku, 标准英文名, 规格, 品牌, 其他写法和中文俗称
-# 名称和品牌按老板提供的产品照片核对过（data/real/raw/product_photos/）
+# 名称和品牌按老板提供的产品照片核对过（data/real/raw/product_photos/）。
+# 规格按采购 Excel：老板确认绝大多数产品卖的是最大规格（CloneX 除外，都是 1L），照片上的规格不算数
 CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     # GH FloraPro 25lb 粉剂。采购 Excel 里写成 GH-Grow/Bloom/Core/Late-25lb，"Core" 就是 Calcium + Micros
     ("FP-GROW-25LB", "FloraPro Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb"]),
@@ -34,7 +35,7 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("PH-DOWN", "pH Down", "", "", ["PH Down", "PH Down Advance"]),
     # Advanced Nutrients
     ("AN-CARBOLOAD", "Carboload", "", "Advanced Nutrients", ["Carboload"]),
-    ("AN-OVERDRIVE", "Overdrive", "", "Advanced Nutrients", ["Overdrive", "Overdrive 6 gal"]),
+    ("AN-OVERDRIVE-6GAL", "Overdrive", "6gal", "Advanced Nutrients", ["Overdrive", "Overdrive 6 gal"]),
     ("AN-BIG-BUD", "Big Bud", "", "Advanced Nutrients", ["Big Bud", "Bigbud"]),
     ("AN-B52", "B-52", "", "Advanced Nutrients", ["B52", "B 52"]),
     ("AN-BUD-CANDY", "Bud Candy", "", "Advanced Nutrients", ["Bud Candy", "棉花糖"]),
@@ -48,13 +49,17 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
      ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
     ("CYCO-SUPA-STIKY-5G", "Cyco Supa Stiky", "5G", "Cyco",
      ["Cyco Supa Sticky", "Supa Sticky", "(CYCO) supa sticky 5 gal"]),
-    ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "紫粉"]),
+    ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "紫粉", "三朵花"]),
     # 老板确认：同名的都是同规格，盘点里的 Weight Max 10kg 合并进来
     ("GROTEK-WEIGHTMAX", "WeightMax", "", "Grotek", ["Weight Max", "WeightMax", "Weight Max 10kg", "鸦片粉"]),
-    ("BOTANICARE-CALMAG-PLUS", "Cal-Mag Plus", "", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag"]),
-    ("GO-BIOROOT", "BioRoot", "", "General Organics", ["Bioroot", "Bio root", "Bio root 6 gal"]),
-    ("GH-FLORALICIOUS-PLUS", "Floralicious Plus", "", "General Hydroponics",
-     ["Floralicious", "Floralicious 6 gal", "Floralicious 1 gal", "香味"]),
+    ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag"]),
+    ("GO-BIOROOT-6GAL", "BioRoot", "6gal", "General Organics", ["Bioroot", "Bio root", "Bio root 6 gal"]),
+    # 老板确认：Floralicious 有 6gal 和 1gal 两种（没有 2.5gal）。采购 Excel 里的是最大规格 6gal；
+    # 1gal 是早期货柜进的。只写 "Floralicious" 或 "香味" 有歧义，要问清规格
+    ("GH-FLORALICIOUS-PLUS-6GAL", "Floralicious Plus", "6gal", "General Hydroponics",
+     ["Floralicious 6 gal", "Floralicious 6gal"]),
+    ("GH-FLORALICIOUS-PLUS-1GAL", "Floralicious Plus", "1gal", "General Hydroponics",
+     ["Floralicious 1 gal", "Floralicious 1gal"]),
     ("SUPERTHRIVE-PRO-TEKT", "Pro-TeKt", "", "SUPERthrive", ["Pro-Tekt", "Pro Tekt"]),
     ("ZERO-2.5G", "Zero", "2.5G", "", ["Zero 2.5G"]),
     ("SANDATE-5G", "SanDate", "5G", "", ["SanDate 5G"]),
@@ -70,7 +75,7 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
 ]
 
 # 早期货柜进的货：没有采购记录，但盘点里有，所以也要进产品目录
-EARLY_STOCK_SKUS = {"BIG-TIME-ENZYME", "BOTANICARE-SILICA-BLAST", "GH-DIAMOND-NECTAR", "GH-TRUEFLO",
+EARLY_STOCK_SKUS = {"GH-FLORALICIOUS-PLUS-1GAL", "BIG-TIME-ENZYME", "BOTANICARE-SILICA-BLAST", "GH-DIAMOND-NECTAR", "GH-TRUEFLO",
                     "BLOOM-LIQUID-PLANT-FOOD", "CYCO-SILICA-5G"}
 
 
@@ -84,6 +89,10 @@ _NAME_SKUS: dict[str, list[str]] = {}
 for _sku, _name, _size, _brand, _aliases in CATALOG:
     _NAME_SKUS.setdefault(norm(_name), []).append(_sku)
 AMBIGUOUS: dict[str, list[str]] = {k: v for k, v in _NAME_SKUS.items() if len(v) > 1}
+# 有歧义的俗称和写法（不带规格）：例如 "香味" 可能是 6gal 也可能是 1gal
+for _a, _skus in {"Floralicious": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
+                  "香味": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]}.items():
+    AMBIGUOUS[norm(_a)] = _skus
 
 ALIAS_TO_SKU: dict[str, str] = {}
 for _sku, _name, _size, _brand, _aliases in CATALOG:

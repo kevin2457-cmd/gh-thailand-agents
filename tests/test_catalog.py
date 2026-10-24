@@ -13,7 +13,14 @@ def test_chinese_nicknames():
     assert lookup("紫粉") == "GROTEK-MONSTER-BLOOM"
     assert lookup("鸦片粉") == "GROTEK-WEIGHTMAX"
     assert lookup("棉花糖") == "AN-BUD-CANDY"
-    assert lookup("香味") == "GH-FLORALICIOUS-PLUS"
+    assert lookup("三朵花") == "GROTEK-MONSTER-BLOOM"
+
+
+def test_floralicious_needs_size():
+    # 老板确认有 6gal 和 1gal 两种，"香味" 不带规格时不能猜
+    assert lookup("香味") is None
+    assert candidates("香味") == ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]
+    assert lookup("Floralicious 1 gal") == "GH-FLORALICIOUS-PLUS-1GAL"
 
 
 def test_spelling_variants():
@@ -30,5 +37,5 @@ def test_ambiguous_name_is_not_guessed():
 
 
 def test_unknown_name():
-    assert lookup("三朵花") is None
-    assert candidates("三朵花") == []
+    assert lookup("Bush load") is None
+    assert candidates("Bush load") == []
