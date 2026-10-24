@@ -14,6 +14,13 @@ def test_chinese_nicknames():
     assert lookup("鸦片粉") == "GROTEK-WEIGHTMAX"
     assert lookup("棉花糖") == "AN-BUD-CANDY"
     assert lookup("三朵花") == "GROTEK-MONSTER-BLOOM"
+    assert lookup("绿色粉") == "FP-GROW-25LB"
+    assert lookup("红色粉") == "FP-BLOOM-25LB"
+    assert lookup("黑色 Micro") == "FP-CAMICRO-25LB"
+    assert lookup("红 Late Bloom") == "FP-LATEBLOOM-25LB"
+    assert lookup("Cyco 糖") == "CYCO-SUPA-STIKY-5G"
+    assert lookup("番茄") == "BOTANICARE-CALMAG-PLUS-6GAL"
+    assert candidates("向日葵") == ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]
 
 
 def test_floralicious_needs_size():

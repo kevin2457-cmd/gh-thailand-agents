@@ -69,3 +69,10 @@
 > 图片只是表明品牌和名字，实际规格按我们 Excel 的。实际上我们绝大多数都是卖最大规格，除了 CloneX 以外。
 > Bio root 都是一个规格 6gal；Cal mag 都是 6gal；Overdrive 都是 6gal。
 > Floralicious：6gal 的 8 个，1gal 的 24 个，2.5gal 的我们没有。
+
+**Follow-up prompt 7（俗称确认）：** Claude 根据照片猜了几个俗称，需要我确认。
+
+> 客户名：等一下继续问我。
+> 三色粉的红/绿/黑/花 = FloraPro Bloom / Grow / Calcium+Micros / Late Bloom：正确！
+> Cyco 糖是 Supa Stiky：对；番茄是 Cal-Mag：对；向日葵是 Floralicious。
+> Bush load：你把没有图片的都发个清单给我，我做给你，然后弹出我放在哪里。

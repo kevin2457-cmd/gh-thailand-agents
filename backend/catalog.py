@@ -13,12 +13,16 @@ import re
 # 规格按采购 Excel：老板确认绝大多数产品卖的是最大规格（CloneX 除外，都是 1L），照片上的规格不算数
 CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     # GH FloraPro 25lb 粉剂。采购 Excel 里写成 GH-Grow/Bloom/Core/Late-25lb，"Core" 就是 Calcium + Micros
-    ("FP-GROW-25LB", "FloraPro Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb"]),
-    ("FP-BLOOM-25LB", "FloraPro Bloom", "25lb", "General Hydroponics", ["GH-Bloom-25lb"]),
+    # 老板确认：按袋子颜色叫，三色粉 = 红 Bloom / 绿 Grow / 黑 Calcium+Micros，"花" = Late Bloom
+    # （单字 红/绿/黑/花 只在"三色粉"上下文里有意义，不放进全局别名，由录单 agent 结合上下文判断）
+    ("FP-GROW-25LB", "FloraPro Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb", "绿色粉", "绿粉", "绿色粉 Grow"]),
+    ("FP-BLOOM-25LB", "FloraPro Bloom", "25lb", "General Hydroponics",
+     ["GH-Bloom-25lb", "红色粉", "红粉", "红 Bloom", "红色粉 Bloom"]),
     # 老板确认：10 月表的 GH-Micro-25lb 是 typo，就是 Core
     ("FP-CAMICRO-25LB", "FloraPro Calcium + Micros", "25lb", "General Hydroponics",
-     ["GH-Core-25lb", "GH-Micro-25lb", "FloraPro Calcium Micros"]),
-    ("FP-LATEBLOOM-25LB", "FloraPro Late Bloom", "25lb", "General Hydroponics", ["GH-Late-25lb"]),
+     ["GH-Core-25lb", "GH-Micro-25lb", "FloraPro Calcium Micros", "黑色粉", "黑粉", "黑 Micro", "黑色 Micro"]),
+    ("FP-LATEBLOOM-25LB", "FloraPro Late Bloom", "25lb", "General Hydroponics",
+     ["GH-Late-25lb", "Late Bloom", "红 Late Bloom"]),
     # Athena Pro 系列
     ("ATH-PRO-GROW-25LB", "Athena Pro Grow", "25lb", "Athena", ["Pro-Grow-25lb", "Pro Grow"]),
     ("ATH-PRO-BLOOM-25LB", "Athena Pro Bloom", "25lb", "Athena", ["Pro-Bloom-25lb", "Pro Bloom"]),
@@ -48,11 +52,11 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("GH-KOOLBLOOM-16LB", "Dry KoolBloom", "16lb", "General Hydroponics",
      ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
     ("CYCO-SUPA-STIKY-5G", "Cyco Supa Stiky", "5G", "Cyco",
-     ["Cyco Supa Sticky", "Supa Sticky", "(CYCO) supa sticky 5 gal"]),
+     ["Cyco Supa Sticky", "Supa Sticky", "(CYCO) supa sticky 5 gal", "Cyco 糖"]),
     ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "紫粉", "三朵花"]),
     # 老板确认：同名的都是同规格，盘点里的 Weight Max 10kg 合并进来
     ("GROTEK-WEIGHTMAX", "WeightMax", "", "Grotek", ["Weight Max", "WeightMax", "Weight Max 10kg", "鸦片粉"]),
-    ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag"]),
+    ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag", "番茄"]),
     ("GO-BIOROOT-6GAL", "BioRoot", "6gal", "General Organics", ["Bioroot", "Bio root", "Bio root 6 gal"]),
     # 老板确认：Floralicious 有 6gal 和 1gal 两种（没有 2.5gal）。采购 Excel 里的是最大规格 6gal；
     # 1gal 是早期货柜进的。只写 "Floralicious" 或 "香味" 有歧义，要问清规格
@@ -91,7 +95,8 @@ for _sku, _name, _size, _brand, _aliases in CATALOG:
 AMBIGUOUS: dict[str, list[str]] = {k: v for k, v in _NAME_SKUS.items() if len(v) > 1}
 # 有歧义的俗称和写法（不带规格）：例如 "香味" 可能是 6gal 也可能是 1gal
 for _a, _skus in {"Floralicious": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
-                  "香味": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]}.items():
+                  "香味": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
+                  "向日葵": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]}.items():
     AMBIGUOUS[norm(_a)] = _skus
 
 ALIAS_TO_SKU: dict[str, str] = {}
