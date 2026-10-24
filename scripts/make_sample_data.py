@@ -84,6 +84,13 @@ BASKETS = [
 ]
 
 
+THB_PER_USD = 35  # 下面的价格表是按泰铢写的，输出时换算成美元
+
+
+def usd(thb: float) -> float:
+    return round(thb / THB_PER_USD, 2)
+
+
 def iso(d: date) -> str:
     return d.isoformat()
 
@@ -228,9 +235,10 @@ def main() -> None:
     write_csv("suppliers", ["id", "name", "country", "default_lead_time_days"], SUPPLIERS)
     write_csv(
         "products",
-        ["sku", "brand", "name", "size", "unit", "units_per_case", "cost_thb", "price_thb",
+        ["sku", "brand", "name", "size", "unit", "cost_usd", "freight_usd", "price_usd", "floor_price_usd",
          "safety_stock", "lead_time_days", "supplier_id", "aliases", "active"],
-        [(p[0], p[1], p[2], p[3], "case", p[4], p[5], p[6], safety[p[0]], lead[p[7]], p[7], p[8], 1) for p in PRODUCTS],
+        [(p[0], p[1], p[2], p[3], "case", usd(p[5]), 0, usd(p[6]), usd(p[6] * 0.93), safety[p[0]], lead[p[7]], p[7],
+          p[8], 1) for p in PRODUCTS],
     )
     write_csv(
         "customers",
@@ -239,9 +247,11 @@ def main() -> None:
           c["created_at"]) for c in customers],
     )
     write_csv("sales", ["id", "sale_date", "customer_id", "source", "note"], sales)
-    write_csv("sale_items", ["sale_id", "sku", "qty", "unit_price"], sale_items)
+    write_csv("sale_items", ["sale_id", "sku", "qty", "unit_price"],
+              [(sid, sku, q, usd(p)) for sid, sku, q, p in sale_items])
     write_csv("purchases", ["id", "supplier_id", "order_date", "expected_date", "received_date", "status", "note"], purchases)
-    write_csv("purchase_items", ["purchase_id", "sku", "qty", "unit_cost"], purchase_items)
+    write_csv("purchase_items", ["purchase_id", "sku", "qty", "unit_cost", "freight_per_unit"],
+              [(pid, sku, q, usd(c), 0) for pid, sku, q, c in purchase_items])
     write_csv("opening_stock", ["sku", "as_of_date", "qty"], opening)
 
     print(f"已写入 {SAMPLE_DIR}")

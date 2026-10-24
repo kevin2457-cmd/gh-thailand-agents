@@ -37,3 +37,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# Evidence produced from real data (business numbers) stays local
+output/evidence/real_*

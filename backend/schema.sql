@@ -1,7 +1,7 @@
 -- GH Thailand 仓储库存 + CRM 数据库结构（SQLite）
 -- 设计原则：数据库保存事实，确定性代码负责计算，LLM 只负责理解和解释。
 -- 库存不单独存一个"当前数量"字段：当前库存 = stock_moves 的累计和（见 v_stock），这样每一次变动都有记录可查。
--- 所有数量的单位都是 products.unit（默认为箱）。金额单位是泰铢（THB）。
+-- 所有数量的单位都是 products.unit（桶/瓶，和采购 Excel 的"当量"一致）。金额单位是美元（USD）。
 
 PRAGMA foreign_keys = ON;
 
@@ -20,18 +20,19 @@ CREATE TABLE suppliers (
 );
 
 CREATE TABLE products (
-    sku             TEXT PRIMARY KEY,            -- 例如 GH-MB-2.2LB
-    brand           TEXT NOT NULL,
-    name            TEXT NOT NULL,
-    size            TEXT NOT NULL,               -- 例如 1 gal, 2.2 lb
-    unit            TEXT NOT NULL DEFAULT 'case',
-    units_per_case  INTEGER NOT NULL DEFAULT 1,  -- 每箱几瓶/罐
-    cost_thb        REAL NOT NULL CHECK (cost_thb >= 0),
-    price_thb       REAL NOT NULL CHECK (price_thb >= 0),
-    safety_stock    INTEGER NOT NULL CHECK (safety_stock >= 0),
-    lead_time_days  INTEGER NOT NULL CHECK (lead_time_days > 0),
-    supplier_id     TEXT NOT NULL REFERENCES suppliers(id),
-    aliases         TEXT NOT NULL DEFAULT '',    -- 聊天里常见的叫法，用 | 分隔，例如 "MB|monster|开花粉"
+    sku              TEXT PRIMARY KEY,           -- 例如 MONSTER-BLOOM
+    brand            TEXT NOT NULL DEFAULT '',
+    name             TEXT NOT NULL,              -- 标准英文名，统计都用它
+    size             TEXT NOT NULL DEFAULT '',   -- 例如 25lb, 5G, 1L
+    unit             TEXT NOT NULL DEFAULT 'unit',
+    cost_usd         REAL NOT NULL CHECK (cost_usd >= 0),        -- 拿货价（最近一柜）
+    freight_usd      REAL NOT NULL DEFAULT 0 CHECK (freight_usd >= 0),  -- 每桶分摊运费（最近一柜）
+    price_usd        REAL NOT NULL CHECK (price_usd >= 0),       -- 建议零售价
+    floor_price_usd  REAL NOT NULL CHECK (floor_price_usd >= 0), -- 建议销售底价，低于它要警告
+    safety_stock     INTEGER NOT NULL CHECK (safety_stock >= 0),
+    lead_time_days   INTEGER NOT NULL CHECK (lead_time_days > 0),
+    supplier_id      TEXT NOT NULL REFERENCES suppliers(id),
+    aliases          TEXT NOT NULL DEFAULT '',   -- 中文俗称和各种写法，用 | 分隔，例如 "紫粉|MB|Monster"
     active          INTEGER NOT NULL DEFAULT 1
 );
 
@@ -52,7 +53,7 @@ CREATE TABLE sales (
     id            TEXT PRIMARY KEY,              -- 例如 SO-000123
     sale_date     TEXT NOT NULL,                 -- YYYY-MM-DD
     customer_id   TEXT NOT NULL REFERENCES customers(id),
-    source        TEXT NOT NULL DEFAULT 'import' CHECK (source IN ('import', 'wechat', 'excel', 'invoice', 'chat')),
+    source        TEXT NOT NULL DEFAULT 'import' CHECK (source IN ('import', 'wechat', 'excel', 'invoice', 'report', 'chat')),
     note          TEXT
 );
 
@@ -78,7 +79,8 @@ CREATE TABLE purchase_items (
     purchase_id  TEXT NOT NULL REFERENCES purchases(id) ON DELETE CASCADE,
     sku          TEXT NOT NULL REFERENCES products(sku),
     qty          INTEGER NOT NULL CHECK (qty > 0),
-    unit_cost    REAL NOT NULL CHECK (unit_cost >= 0),
+    unit_cost    REAL NOT NULL CHECK (unit_cost >= 0),       -- 拿货价
+    freight_per_unit REAL NOT NULL DEFAULT 0 CHECK (freight_per_unit >= 0),
     PRIMARY KEY (purchase_id, sku)
 );
 
@@ -98,7 +100,7 @@ CREATE TABLE pending_records (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     kind          TEXT NOT NULL CHECK (kind IN ('sale', 'purchase', 'receipt', 'adjustment')),
     payload_json  TEXT NOT NULL,                 -- 结构化草稿（客户、SKU、数量、价格……）
-    source_type   TEXT NOT NULL CHECK (source_type IN ('wechat', 'excel', 'invoice', 'chat')),
+    source_type   TEXT NOT NULL CHECK (source_type IN ('wechat', 'excel', 'invoice', 'report', 'chat')),
     source_text   TEXT,                          -- 原始输入（已脱敏），审批时对照
     warnings      TEXT NOT NULL DEFAULT '[]',    -- 校验发现的问题，JSON 数组
     submitted_by  TEXT NOT NULL REFERENCES users(id),
@@ -156,7 +158,7 @@ GROUP BY pi.sku;
 -- 每张销售单的总额
 CREATE VIEW v_sale_totals AS
 SELECT s.id AS sale_id, s.sale_date, s.customer_id,
-       SUM(si.qty) AS total_qty, SUM(si.qty * si.unit_price) AS total_thb
+       SUM(si.qty) AS total_qty, SUM(si.qty * si.unit_price) AS total_usd
 FROM sales s
 JOIN sale_items si ON si.sale_id = s.id
 GROUP BY s.id;

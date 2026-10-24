@@ -1,16 +1,16 @@
-sku,brand,name,size,unit,units_per_case,cost_thb,price_thb,safety_stock,lead_time_days,supplier_id,aliases,active
-GH-FG-1G,General Hydroponics,FloraGro,1 gal,case,4,3200,4600,39,35,S01,Flora Gro|FG|三元A|生长液,1
-GH-FM-1G,General Hydroponics,FloraMicro,1 gal,case,4,3200,4600,36,35,S01,Flora Micro|FM|三元B|微量元素,1
-GH-FB-1G,General Hydroponics,FloraBloom,1 gal,case,4,3200,4600,36,35,S01,Flora Bloom|FB|三元C|开花液,1
-GH-FG-1Q,General Hydroponics,FloraGro,1 qt,case,12,2700,3900,23,35,S01,FloraGro小瓶|FG 1qt,1
-GH-FM-1Q,General Hydroponics,FloraMicro,1 qt,case,12,2700,3900,21,35,S01,FloraMicro小瓶|FM 1qt,1
-GH-FB-1Q,General Hydroponics,FloraBloom,1 qt,case,12,2700,3900,17,35,S01,FloraBloom小瓶|FB 1qt,1
-GH-CMG-1G,General Hydroponics,CALiMAGic,1 gal,case,4,3600,5200,32,35,S01,Cal-Mag|CalMag|钙镁|แคลแมก,1
-GH-MB-2.2LB,General Hydroponics,Monster Bloom,2.2 lb,case,6,5400,7800,32,35,S01,MB|Monster|开花粉|มอนสเตอร์,1
-GH-KB-1Q,General Hydroponics,Liquid KoolBloom,1 qt,case,12,4200,6000,23,35,S01,KoolBloom|Kool Bloom|KB|酷开花,1
-GH-AS-1Q,General Hydroponics,Armor Si,1 qt,case,12,3000,4300,7,35,S01,Armor Si|硅|ซิลิก้า,1
-GH-RS-1Q,General Hydroponics,RapidStart,1 qt,case,12,5600,8000,7,35,S01,Rapid Start|生根液|เร่งราก,1
-GH-FLP-1Q,General Hydroponics,Floralicious Plus,1 qt,case,12,4800,6900,14,35,S01,Floralicious|FL+,1
-GH-PHU-1Q,General Hydroponics,pH Up,1 qt,case,12,1800,2600,5,35,S01,pH Up|调高|pH上,1
-GH-PHD-1Q,General Hydroponics,pH Down,1 qt,case,12,1800,2600,18,35,S01,pH Down|调低|pH下,1
-AN-BB-1L,Advanced Nutrients,Big Bud,1 L,case,12,6000,8400,8,21,S02,BigBud|BB|大花,1
+sku,brand,name,size,unit,cost_usd,freight_usd,price_usd,floor_price_usd,safety_stock,lead_time_days,supplier_id,aliases,active
+GH-FG-1G,General Hydroponics,FloraGro,1 gal,case,91.43,0,131.43,122.23,39,35,S01,Flora Gro|FG|三元A|生长液,1
+GH-FM-1G,General Hydroponics,FloraMicro,1 gal,case,91.43,0,131.43,122.23,36,35,S01,Flora Micro|FM|三元B|微量元素,1
+GH-FB-1G,General Hydroponics,FloraBloom,1 gal,case,91.43,0,131.43,122.23,36,35,S01,Flora Bloom|FB|三元C|开花液,1
+GH-FG-1Q,General Hydroponics,FloraGro,1 qt,case,77.14,0,111.43,103.63,23,35,S01,FloraGro小瓶|FG 1qt,1
+GH-FM-1Q,General Hydroponics,FloraMicro,1 qt,case,77.14,0,111.43,103.63,21,35,S01,FloraMicro小瓶|FM 1qt,1
+GH-FB-1Q,General Hydroponics,FloraBloom,1 qt,case,77.14,0,111.43,103.63,17,35,S01,FloraBloom小瓶|FB 1qt,1
+GH-CMG-1G,General Hydroponics,CALiMAGic,1 gal,case,102.86,0,148.57,138.17,32,35,S01,Cal-Mag|CalMag|钙镁|แคลแมก,1
+GH-MB-2.2LB,General Hydroponics,Monster Bloom,2.2 lb,case,154.29,0,222.86,207.26,32,35,S01,MB|Monster|开花粉|มอนสเตอร์,1
+GH-KB-1Q,General Hydroponics,Liquid KoolBloom,1 qt,case,120.0,0,171.43,159.43,23,35,S01,KoolBloom|Kool Bloom|KB|酷开花,1
+GH-AS-1Q,General Hydroponics,Armor Si,1 qt,case,85.71,0,122.86,114.26,7,35,S01,Armor Si|硅|ซิลิก้า,1
+GH-RS-1Q,General Hydroponics,RapidStart,1 qt,case,160.0,0,228.57,212.57,7,35,S01,Rapid Start|生根液|เร่งราก,1
+GH-FLP-1Q,General Hydroponics,Floralicious Plus,1 qt,case,137.14,0,197.14,183.34,14,35,S01,Floralicious|FL+,1
+GH-PHU-1Q,General Hydroponics,pH Up,1 qt,case,51.43,0,74.29,69.09,5,35,S01,pH Up|调高|pH上,1
+GH-PHD-1Q,General Hydroponics,pH Down,1 qt,case,51.43,0,74.29,69.09,18,35,S01,pH Down|调低|pH下,1
+AN-BB-1L,Advanced Nutrients,Big Bud,1 L,case,171.43,0,240.0,223.2,8,21,S02,BigBud|BB|大花,1
