@@ -12,7 +12,6 @@
 from __future__ import annotations
 
 import csv
-import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -21,53 +20,12 @@ import openpyxl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from backend.catalog import CATALOG, EARLY_STOCK_SKUS, lookup, norm  # noqa: E402
 from backend.config import REAL_DIR  # noqa: E402
 
 RAW = REAL_DIR / "raw" / "excel"
 LEAD_TIME_DAYS = 60  # 老板确认：大约每 2 个月发一柜、到一柜
 SUPPLIER = ("S01", "US brands via Los Angeles container", "USA", LEAD_TIME_DAYS)
-
-# 标准 SKU 目录：sku, 标准英文名, 规格, 品牌, 其他写法和中文俗称
-CATALOG = [
-    ("GH-GROW-25LB", "GH Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb"]),
-    ("GH-BLOOM-25LB", "GH Bloom", "25lb", "General Hydroponics", ["GH-Bloom-25lb"]),
-    ("GH-CORE-25LB", "GH Core", "25lb", "General Hydroponics", ["GH-Core-25lb", "GH-Micro-25lb"]),  # 老板确认：10 月表的 Micro 是 typo
-    ("GH-LATE-25LB", "GH Late", "25lb", "General Hydroponics", ["GH-Late-25lb"]),
-    ("PRO-GROW-25LB", "Pro Grow", "25lb", "Athena", ["Pro-Grow-25lb"]),
-    ("PRO-BLOOM-25LB", "Pro Bloom", "25lb", "Athena", ["Pro-Bloom-25lb"]),
-    ("PRO-CORE-25LB", "Pro Core", "25lb", "Athena", ["Pro-Core-25lb"]),
-    ("BALANCE-25LB", "Balance", "25lb", "Athena", ["Balance 25lb"]),
-    ("CLEANSE-5G", "Cleanse", "5G", "Athena", ["Cleanse 5G", "Cleanse-5Gallon"]),
-    ("FADE-5G", "Fade", "5G", "Athena", ["Fade 5G", "Fade-5Gallon"]),
-    ("TRISHIELD-1G", "Trishield", "1G", "", ["Trishield 1G"]),
-    ("TRISHIELD-5G", "Trishield", "5G", "", ["Trishield 5G"]),
-    ("GREEN-JUICE-1L", "Green Juice", "1L", "", ["Green Juice", "Green J - 1L"]),  # 老板确认是同一个
-    ("PH-UP", "pH Up", "", "", ["PH UP", "PH UP Advance"]),  # 老板确认是同一个
-    ("PH-DOWN", "pH Down", "", "", ["PH Down", "PH Down Advance"]),
-    ("CARBOLOAD", "Carboload", "", "Advanced Nutrients", ["Carboload"]),
-    ("OVERDRIVE", "Overdrive", "", "Advanced Nutrients", ["Overdrive"]),
-    ("BIG-BUD", "Big Bud", "", "Advanced Nutrients", ["Big Bud", "Bigbud"]),
-    ("B52", "B52", "", "Advanced Nutrients", ["B52"]),
-    ("BUD-CANDY", "Bud Candy", "", "Advanced Nutrients", ["Bud Candy", "棉花糖"]),
-    # 老板确认：CloneX 都是 1L（10 月表写的 1 Gal 也是 1L）
-    ("CLONEX-1L", "CloneX", "1L", "", ["CloneX", "CloneX 1 Gal", "CloneX GEL - 1L", "CloneX Gel"]),
-    ("CUTS-14OZ", "Cuts", "14oz", "", ["Cuts-14OZ", "Cuts 14oz"]),
-    ("ORIGINAL-1L", "Original", "1L", "", ["Original - 1L", "Original"]),
-    # 老板确认：Koolbloom 有液体和粉两种，lb 是粉，Gal 是液体。2/4 月表没写规格的是 6gal 液体
-    ("KOOLBLOOM-6GAL", "Koolbloom (liquid)", "6gal", "General Hydroponics", ["Koolbloom", "Liquid Koolbloom", "Koolbloom 液体", "Koolbloom 6gal"]),
-    ("KOOLBLOOM-16LB", "Koolbloom (powder)", "16lb", "General Hydroponics", ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
-    ("CYCO-SUPA-STICKY", "Cyco Supa Sticky", "", "Cyco", ["Cyco Supa Sticky"]),
-    ("MONSTER-BLOOM", "Monster Bloom", "", "General Hydroponics", ["Monster Bloom", "紫粉"]),
-    ("WEIGHT-MAX", "Weight Max", "", "", ["Weight Max", "WeightMax", "鸦片粉"]),
-    ("CAL-MG-PLUS", "Cal Mg Plus", "", "", ["Cal Mg Plus", "Cal Mg"]),  # 老板确认是同一个
-    ("BIOROOT", "Bioroot", "", "", ["Bioroot"]),
-    ("FLORALICIOUS", "Floralicious", "", "General Hydroponics", ["Floralicious", "香味"]),
-    ("PRO-TEKT", "Pro-Tekt", "", "", ["Pro-Tekt"]),
-    ("ZERO-2.5G", "Zero", "2.5G", "", ["Zero 2.5G"]),
-    ("SANDATE-5G", "SanDate", "5G", "", ["SanDate 5G"]),
-    ("TERPINATOR", "Terpinator", "", "", ["Terpinator"]),
-    ("EMERALD", "Emerald", "", "", ["Emerald"]),
-]
 
 # 每个货柜：读哪个文件、日期。到货日期按文件夹名；下单日期 = 到货 - 60 天（老板确认按 2 个月算）。
 # 第一柜：数量按"洛杉矶 货品清单"的总计列（老板确认按多的结算），价格按"泰国 药水核算"。
@@ -87,17 +45,10 @@ CONTAINERS = [
 ]
 
 
-def norm(name: str) -> str:
-    return re.sub(r"[\s\-_]+", "", str(name)).lower()
-
-
-ALIAS_TO_SKU = {norm(a): sku for sku, name, _, _, aliases in CATALOG for a in aliases + [name]}
-
-
 def to_sku(raw_name: str, where: str) -> str:
-    sku = ALIAS_TO_SKU.get(norm(raw_name))
+    sku = lookup(raw_name)
     if sku is None:
-        raise SystemExit(f"未知产品名 {raw_name!r}（{where}）：请先加进 CATALOG 的别名里，并和老板确认。")
+        raise SystemExit(f"未知产品名 {raw_name!r}（{where}）：请先加进 backend/catalog.py 的别名里，并和老板确认。")
     return sku
 
 
@@ -184,6 +135,9 @@ def main() -> None:
     products = []
     for sku, name, size, brand, aliases in CATALOG:
         p = latest_price.get(sku)
+        if p is None and sku in EARLY_STOCK_SKUS:  # 早期货柜进的货：采购文件缺失，进价未知
+            p = {"cost": 0.0, "freight": 0.0, "price": 0.0, "floor": 0.0}
+            checks.append(f"{sku}：早期货柜进的货，采购文件缺失，进价和售价暂记 0")
         # 从没进过货、也没有正式报价的产品（例如第一柜里数量为 0 的 Emerald）不进目录
         if p is None or (sku not in purchased and not isinstance(p["price"], (int, float))):
             continue

@@ -51,3 +51,14 @@
 
 > 2 月和 4 月表里的 Koolbloom 是 6gal。
 > CloneX 都是 1L 的。
+
+**Follow-up prompt 4（产品照片）：** 销售报告和盘点里有很多中文俗称和 Excel 里没有的产品，需要用实物照片对照。
+
+> 放进去了，缺失的图片你列清单给我我全部补充。
+
+**Follow-up prompt 5（盘点表）：** 盘点表里有分隔线、同名产品出现两次、Excel 里没有的产品，需要我说明。
+
+> 分隔线不是不同仓库，都是一个仓库。
+> 同名产品合并总数就可以，同样名字的都是同规格。
+> Big time enzyme、Silica blast、Diamond nectar、True flo、Bloom liquid plant food、CYCO silica 5gal、Weight Max 10kg 是早期货柜（缺失的那段文件）进的货：对的。
+> 采购 Excel 里有、但盘点里没出现的（Pro Grow、Pro Bloom、Balance、GH Grow、Late）：对啊卖完了，卖很快。

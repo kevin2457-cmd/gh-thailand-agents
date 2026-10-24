@@ -37,6 +37,15 @@ python scripts/init_db.py --source sample   # default
 python scripts/init_db.py --source real     # needs CSVs in data/real/ with the same columns as data/sample/
 ```
 
+The real CSVs are built on the owner's computer from raw files in `data/real/raw/` (container Excel sheets, a Word stocktake):
+
+```
+python scripts/import_real_purchases.py   # container Excel -> products, purchases (checked against each sheet's totals)
+python scripts/import_real_stocktake.py   # last stocktake -> opening stock; stock is counted from this date onward
+```
+
+Every product spelling and Chinese nickname maps to one standard SKU in `backend/catalog.py`. An unknown or ambiguous name stops the import instead of being guessed.
+
 `python scripts/make_sample_data.py` regenerates the sample CSVs (fixed seed, same output each run).
 
 ## Privacy

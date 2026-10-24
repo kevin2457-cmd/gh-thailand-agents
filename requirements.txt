@@ -13,3 +13,4 @@ python-dotenv==1.2.3
 pytest==9.1.0
 # Reading the owner's Excel files (scripts/import_real_purchases.py)
 openpyxl==3.1.5
+python-docx==1.2.0

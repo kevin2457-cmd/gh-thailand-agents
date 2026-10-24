@@ -31,10 +31,14 @@ def connect(db_path: Path = DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+# 这些列的空字符串存成 NULL（例如在途采购单还没有 received_date）；其他列保留空字符串，例如品牌未知
+NULL_IF_EMPTY = {"received_date"}
+
+
 def _read_csv(path: Path) -> list[dict[str, str | None]]:
     with path.open(encoding="utf-8-sig", newline="") as f:
-        # 空字符串存成 NULL（例如在途采购单的 received_date）
-        return [{k: (v if v != "" else None) for k, v in row.items()} for row in csv.DictReader(f)]
+        return [{k: (None if v == "" and k in NULL_IF_EMPTY else v) for k, v in row.items()}
+                for row in csv.DictReader(f)]
 
 
 def _insert_rows(conn: sqlite3.Connection, table: str, rows: list[dict]) -> None:
@@ -46,21 +50,27 @@ def _insert_rows(conn: sqlite3.Connection, table: str, rows: list[dict]) -> None
 
 
 def _build_stock_moves(conn: sqlite3.Connection, opening: list[dict]) -> None:
+    """期初库存（或盘点）是起点：只有起点之后的销售和到货才算进库存，之前的已经包含在盘点数里。"""
+    conn.execute("CREATE TEMP TABLE opening (sku TEXT PRIMARY KEY, as_of_date TEXT NOT NULL)")
+    conn.executemany("INSERT INTO opening VALUES (?, ?)", [(r["sku"], r["as_of_date"]) for r in opening])
     conn.executemany(
         "INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id) VALUES (?, ?, ?, 'opening', NULL)",
         [(r["sku"], r["as_of_date"], int(r["qty"])) for r in opening if int(r["qty"]) != 0],
     )
+    after_opening = "{date} > COALESCE((SELECT as_of_date FROM opening o WHERE o.sku = {sku}), '0000-00-00')"
     conn.execute(
-        """INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id)
+        f"""INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id)
            SELECT si.sku, s.sale_date, -si.qty, 'sale', s.id
-           FROM sale_items si JOIN sales s ON s.id = si.sale_id"""
+           FROM sale_items si JOIN sales s ON s.id = si.sale_id
+           WHERE {after_opening.format(date='s.sale_date', sku='si.sku')}"""
     )
     conn.execute(
-        """INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id)
+        f"""INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id)
            SELECT pi.sku, pu.received_date, pi.qty, 'purchase_receipt', pu.id
            FROM purchase_items pi JOIN purchases pu ON pu.id = pi.purchase_id
-           WHERE pu.status = 'received'"""
+           WHERE pu.status = 'received' AND {after_opening.format(date='pu.received_date', sku='pi.sku')}"""
     )
+    conn.execute("DROP TABLE opening")
 
 
 def init_db(source: str = "sample", db_path: Path = DB_PATH) -> dict[str, int]:

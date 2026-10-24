@@ -48,6 +48,34 @@ def test_stock_moves_match_sales_and_receipts(conn):
     assert sold == moved_out
 
 
+def test_stocktake_is_starting_point(tmp_path):
+    """盘点之前的销售和到货不能再扣/加一次库存（真实数据就是这种情况）。"""
+    import csv
+    import shutil
+
+    from backend import db as dbmod
+
+    src = tmp_path / "data"
+    shutil.copytree(config.SAMPLE_DIR, src)
+    rows = list(csv.DictReader((src / "opening_stock.csv").open(encoding="utf-8")))
+    with (src / "opening_stock.csv").open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["sku", "as_of_date", "qty"])
+        for r in rows:
+            w.writerow([r["sku"], "2099-01-01", 7])  # 盘点日期晚于所有交易
+
+    orig = dbmod.data_dir_for
+    dbmod.data_dir_for = lambda source: src
+    try:
+        dbmod.init_db("sample", db_path=tmp_path / "t.db")
+    finally:
+        dbmod.data_dir_for = orig
+    c = connect(tmp_path / "t.db")
+    on_hand = {r["sku"]: r["on_hand"] for r in c.execute("SELECT sku, on_hand FROM v_stock")}
+    c.close()
+    assert set(on_hand.values()) == {7}
+
+
 def test_demo_scenarios_present(conn):
     # 有 SKU 处于或低于安全库存
     low = conn.execute("SELECT COUNT(*) FROM v_stock WHERE on_hand <= safety_stock").fetchone()[0]
