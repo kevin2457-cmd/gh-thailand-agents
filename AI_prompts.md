@@ -76,3 +76,8 @@
 > 三色粉的红/绿/黑/花 = FloraPro Bloom / Grow / Calcium+Micros / Late Bloom：正确！
 > Cyco 糖是 Supa Stiky：对；番茄是 Cal-Mag：对；向日葵是 Floralicious。
 > Bush load：你把没有图片的都发个清单给我，我做给你，然后弹出我放在哪里。
+
+**Follow-up prompt 8（补充产品照片）：** 有 12 个产品没有照片，Claude 认不出 Bush load。
+
+> FloraBloom 30 包（80 美元一包）是 FloraPro Bloom 25lb：没错！
+> 图片我放进去了个 pdf，你看一下。

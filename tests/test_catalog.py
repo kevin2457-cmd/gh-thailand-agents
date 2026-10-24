@@ -43,6 +43,13 @@ def test_ambiguous_name_is_not_guessed():
     assert lookup("Trishield 5G") == "TRISHIELD-5G"
 
 
+def test_photo_pdf_products():
+    assert lookup("Bush load") == "BUSH-LOAD"
+    assert lookup("FloraBloom") == "FP-BLOOM-25LB"
+    assert lookup("Zero 2.5G") == "ZEROTOL-2.5G"
+    assert lookup("SanDate 5G") == "SANIDATE-5G"
+
+
 def test_unknown_name():
-    assert lookup("Bush load") is None
-    assert candidates("Bush load") == []
+    assert lookup("Sensi Bloom") is None
+    assert candidates("Sensi Bloom") == []

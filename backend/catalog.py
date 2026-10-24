@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 
 # sku, 标准英文名, 规格, 品牌, 其他写法和中文俗称
-# 名称和品牌按老板提供的产品照片核对过（data/real/raw/product_photos/）。
+# 名称和品牌按老板提供的产品照片核对过（data/real/raw/product_photos/，包括 Product_Photos_12_Items.pdf）。
 # 规格按采购 Excel：老板确认绝大多数产品卖的是最大规格（CloneX 除外，都是 1L），照片上的规格不算数
 CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     # GH FloraPro 25lb 粉剂。采购 Excel 里写成 GH-Grow/Bloom/Core/Late-25lb，"Core" 就是 Calcium + Micros
@@ -17,7 +17,7 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     # （单字 红/绿/黑/花 只在"三色粉"上下文里有意义，不放进全局别名，由录单 agent 结合上下文判断）
     ("FP-GROW-25LB", "FloraPro Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb", "绿色粉", "绿粉", "绿色粉 Grow"]),
     ("FP-BLOOM-25LB", "FloraPro Bloom", "25lb", "General Hydroponics",
-     ["GH-Bloom-25lb", "红色粉", "红粉", "红 Bloom", "红色粉 Bloom"]),
+     ["GH-Bloom-25lb", "红色粉", "红粉", "红 Bloom", "红色粉 Bloom", "FloraBloom"]),  # 老板确认 FloraBloom 就是它
     # 老板确认：10 月表的 GH-Micro-25lb 是 typo，就是 Core
     ("FP-CAMICRO-25LB", "FloraPro Calcium + Micros", "25lb", "General Hydroponics",
      ["GH-Core-25lb", "GH-Micro-25lb", "FloraPro Calcium Micros", "黑色粉", "黑粉", "黑 Micro", "黑色 Micro"]),
@@ -35,8 +35,8 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("TRISHIELD-5G", "Trishield", "5G", "General Hydroponics", ["Trishield 5G"]),
     # 老板确认：Green J - 1L 就是 Green Juice；pH Up/Down 和 Advance 是同一个
     ("GREEN-JUICE-1L", "Green Juice", "1L", "", ["Green Juice", "Green J - 1L"]),
-    ("PH-UP", "pH Up", "", "", ["PH UP", "PH UP Advance"]),
-    ("PH-DOWN", "pH Down", "", "", ["PH Down", "PH Down Advance"]),
+    ("PH-UP", "pH Up", "", "Advanced Nutrients", ["PH UP", "PH UP Advance"]),
+    ("PH-DOWN", "pH Down", "", "Advanced Nutrients", ["PH Down", "PH Down Advance"]),
     # Advanced Nutrients
     ("AN-CARBOLOAD", "Carboload", "", "Advanced Nutrients", ["Carboload"]),
     ("AN-OVERDRIVE-6GAL", "Overdrive", "6gal", "Advanced Nutrients", ["Overdrive", "Overdrive 6 gal"]),
@@ -45,7 +45,7 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("AN-BUD-CANDY", "Bud Candy", "", "Advanced Nutrients", ["Bud Candy", "棉花糖"]),
     # 老板确认：CloneX 都是 1L（10 月表写的 1 Gal 也是 1L）
     ("CLONEX-1L", "CloneX", "1L", "Growth Technology", ["CloneX", "CloneX 1 Gal", "CloneX GEL - 1L", "CloneX Gel"]),
-    ("ORIGINAL-1L", "Original", "1L", "", ["Original - 1L", "Original"]),
+    ("ORIGINAL-1L", "Original Liquid Plant Fertilizer", "1L", "", ["Original - 1L", "Original"]),
     # 老板确认：Koolbloom 有液体和粉两种，lb 是粉，Gal 是液体。2/4 月表没写规格的是 6gal 液体
     ("GH-KOOLBLOOM-6GAL", "Liquid KoolBloom", "6gal", "General Hydroponics",
      ["Koolbloom", "Liquid Koolbloom", "Liquid Kool bloom 6 gal", "Koolbloom 液体", "Koolbloom 6gal"]),
@@ -65,21 +65,23 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("GH-FLORALICIOUS-PLUS-1GAL", "Floralicious Plus", "1gal", "General Hydroponics",
      ["Floralicious 1 gal", "Floralicious 1gal"]),
     ("SUPERTHRIVE-PRO-TEKT", "Pro-TeKt", "", "SUPERthrive", ["Pro-Tekt", "Pro Tekt"]),
-    ("ZERO-2.5G", "Zero", "2.5G", "", ["Zero 2.5G"]),
-    ("SANDATE-5G", "SanDate", "5G", "", ["SanDate 5G"]),
+    ("ZEROTOL-2.5G", "ZeroTol 2.0", "2.5G", "BioSafe Systems", ["Zero 2.5G", "Zero", "ZeroTol"]),
+    ("SANIDATE-5G", "SaniDate 5.0", "5G", "BioSafe Systems", ["SanDate 5G", "SanDate", "SaniDate"]),
     ("TERPINATOR", "Terpinator", "", "", ["Terpinator"]),
     ("EMERALD", "Emerald", "", "", ["Emerald"]),
     # 早期货柜进的货（老板确认；那段采购文件缺失，所以没有进价）
-    ("BIG-TIME-ENZYME", "Big Time Enzyme", "", "", ["Big time enzyme"]),
+    ("BIG-TIME-ENZYME", "Big Time Enzyme", "", "Big Time Hydroponics", ["Big time enzyme"]),
     ("BOTANICARE-SILICA-BLAST", "Silica Blast", "", "Botanicare", ["Silica blast"]),
     ("GH-DIAMOND-NECTAR", "Diamond Nectar", "", "General Hydroponics", ["Diamond nectar"]),
     ("GH-TRUEFLO", "TrueFlo", "", "General Hydroponics", ["True flo", "TrueFlo"]),
-    ("BLOOM-LIQUID-PLANT-FOOD", "Bloom Liquid Plant Food", "", "", ["Bloom liquid plant food"]),
+    ("BLOOM-LIQUID-PLANT-FOOD", "Bloom Liquid Plant Food", "", "Dyna-Gro", ["Bloom liquid plant food"]),
+    # 6.26 销售单里的 "Bush load"（照片标签上的品牌是 Wet Inc）；盘点里没有，已卖完
+    ("BUSH-LOAD", "Bush Load", "1qt", "Wet Inc", ["Bush load"]),
     ("CYCO-SILICA-5G", "Cyco Silica", "5G", "Cyco", ["CYCO ( silica ) 5 gal", "Cyco silica"]),
 ]
 
 # 早期货柜进的货：没有采购记录，但盘点里有，所以也要进产品目录
-EARLY_STOCK_SKUS = {"GH-FLORALICIOUS-PLUS-1GAL", "BIG-TIME-ENZYME", "BOTANICARE-SILICA-BLAST", "GH-DIAMOND-NECTAR", "GH-TRUEFLO",
+EARLY_STOCK_SKUS = {"GH-FLORALICIOUS-PLUS-1GAL", "BUSH-LOAD", "BIG-TIME-ENZYME", "BOTANICARE-SILICA-BLAST", "GH-DIAMOND-NECTAR", "GH-TRUEFLO",
                     "BLOOM-LIQUID-PLANT-FOOD", "CYCO-SILICA-5G"}
 
 
