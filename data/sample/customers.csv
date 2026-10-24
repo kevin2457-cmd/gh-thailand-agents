@@ -1,0 +1,41 @@
+id,code,name,phone,address,wechat_alias,region,type,created_at
+C001,CUST-001,Coconut Farm Khon Kaen (sample),000-000-0001,"Sample address 1, Khon Kaen",Ann-Coconut,Khon Kaen,reseller,2025-10-23
+C002,CUST-002,River Grow Supply Nakhon Ratchasima (sample),000-000-0002,"Sample address 2, Nakhon Ratchasima",Pim-River,Nakhon Ratchasima,retail,2025-10-23
+C003,CUST-003,Coconut Hydro Shop Bangkok (sample),000-000-0003,"Sample address 3, Bangkok",Nok-Coconut,Bangkok,farm,2025-10-23
+C004,CUST-004,Bamboo Hydro Shop Bangkok (sample),000-000-0004,"Sample address 4, Bangkok",Tor-Bamboo,Bangkok,grow_shop,2025-10-23
+C005,CUST-005,Lanna Garden Center Khon Kaen (sample),000-000-0005,"Sample address 5, Khon Kaen",Ploy-Lanna,Khon Kaen,grow_shop,2025-10-23
+C006,CUST-006,Tropic Garden Center Nakhon Ratchasima (sample),000-000-0006,"Sample address 6, Nakhon Ratchasima",Fon-Tropic,Nakhon Ratchasima,grow_shop,2025-10-23
+C007,CUST-007,Jungle Farm Phuket (sample),000-000-0007,"Sample address 7, Phuket",Tum-Jungle,Phuket,grow_shop,2025-10-23
+C008,CUST-008,Lanna Hydro Shop Nonthaburi (sample),000-000-0008,"Sample address 8, Nonthaburi",Fon-Lanna,Nonthaburi,farm,2025-10-23
+C009,CUST-009,Orchid Hydro Shop Bangkok (sample),000-000-0009,"Sample address 9, Bangkok",Golf-Orchid,Bangkok,reseller,2025-10-23
+C010,CUST-010,River Garden Center Nonthaburi (sample),000-000-0010,"Sample address 10, Nonthaburi",Art-River,Nonthaburi,grow_shop,2026-09-09
+C011,CUST-011,Green Hydro Shop Chiang Mai (sample),000-000-0011,"Sample address 11, Chiang Mai",Ploy-Green,Chiang Mai,retail,2026-09-22
+C012,CUST-012,Green Grow House Hua Hin (sample),000-000-0012,"Sample address 12, Hua Hin",Ben-Green,Hua Hin,farm,2025-10-23
+C013,CUST-013,Mango Grow Supply Nonthaburi (sample),000-000-0013,"Sample address 13, Nonthaburi",Tum-Mango,Nonthaburi,farm,2025-10-23
+C014,CUST-014,Tropic Hydro Shop Nakhon Ratchasima (sample),000-000-0014,"Sample address 14, Nakhon Ratchasima",Beam-Tropic,Nakhon Ratchasima,grow_shop,2025-10-23
+C015,CUST-015,Jungle Greens Nakhon Ratchasima (sample),000-000-0015,"Sample address 15, Nakhon Ratchasima",Tum-Jungle,Nakhon Ratchasima,farm,2025-10-23
+C016,CUST-016,Orchid Garden Center Chiang Mai (sample),000-000-0016,"Sample address 16, Chiang Mai",Art-Orchid,Chiang Mai,retail,2025-10-23
+C017,CUST-017,Andaman Grow Supply Chiang Mai (sample),000-000-0017,"Sample address 17, Chiang Mai",Ploy-Andaman,Chiang Mai,reseller,2025-10-23
+C018,CUST-018,Coconut Garden Center Bangkok (sample),000-000-0018,"Sample address 18, Bangkok",Pond-Coconut,Bangkok,farm,2025-10-23
+C019,CUST-019,Jungle Agri Bangkok (sample),000-000-0019,"Sample address 19, Bangkok",Nok-Jungle,Bangkok,grow_shop,2025-10-23
+C020,CUST-020,Lotus Farm Phuket (sample),000-000-0020,"Sample address 20, Phuket",Tor-Lotus,Phuket,grow_shop,2025-10-23
+C021,CUST-021,Golden Agri Bangkok (sample),000-000-0021,"Sample address 21, Bangkok",Art-Golden,Bangkok,farm,2025-10-23
+C022,CUST-022,Lanna Greens Chiang Mai (sample),000-000-0022,"Sample address 22, Chiang Mai",Beam-Lanna,Chiang Mai,farm,2025-10-23
+C023,CUST-023,Coconut Farm Pattaya (sample),000-000-0023,"Sample address 23, Pattaya",Tor-Coconut,Pattaya,retail,2025-10-23
+C024,CUST-024,Coconut Hydroponics Chiang Mai (sample),000-000-0024,"Sample address 24, Chiang Mai",Bee-Coconut,Chiang Mai,farm,2025-10-23
+C025,CUST-025,Tropic Hydroponics Hua Hin (sample),000-000-0025,"Sample address 25, Hua Hin",Fon-Tropic,Hua Hin,reseller,2025-10-23
+C026,CUST-026,Lotus Farm Chiang Mai (sample),000-000-0026,"Sample address 26, Chiang Mai",Ann-Lotus,Chiang Mai,grow_shop,2025-10-23
+C027,CUST-027,Orchid Farm Pattaya (sample),000-000-0027,"Sample address 27, Pattaya",Nok-Orchid,Pattaya,grow_shop,2025-10-23
+C028,CUST-028,Jungle Grow House Bangkok (sample),000-000-0028,"Sample address 28, Bangkok",Beam-Jungle,Bangkok,grow_shop,2026-09-08
+C029,CUST-029,Siam Hydroponics Khon Kaen (sample),000-000-0029,"Sample address 29, Khon Kaen",Golf-Siam,Khon Kaen,reseller,2025-10-23
+C030,CUST-030,Rice Field Farm Phuket (sample),000-000-0030,"Sample address 30, Phuket",Toon-Rice,Phuket,farm,2025-10-23
+C031,CUST-031,Monsoon Garden Center Bangkok (sample),000-000-0031,"Sample address 31, Bangkok",Golf-Monsoon,Bangkok,grow_shop,2025-10-23
+C032,CUST-032,Green Grow House Nonthaburi (sample),000-000-0032,"Sample address 32, Nonthaburi",Ploy-Green,Nonthaburi,grow_shop,2025-10-23
+C033,CUST-033,Golden Grow Supply Chiang Mai (sample),000-000-0033,"Sample address 33, Chiang Mai",Bee-Golden,Chiang Mai,grow_shop,2025-10-23
+C034,CUST-034,Monsoon Greens Udon Thani (sample),000-000-0034,"Sample address 34, Udon Thani",Ben-Monsoon,Udon Thani,grow_shop,2025-10-23
+C035,CUST-035,Tropic Grow Supply Phuket (sample),000-000-0035,"Sample address 35, Phuket",Tor-Tropic,Phuket,retail,2025-10-23
+C036,CUST-036,Orchid Greens Chiang Mai (sample),000-000-0036,"Sample address 36, Chiang Mai",Beam-Orchid,Chiang Mai,retail,2025-10-23
+C037,CUST-037,Mango Hydro Shop Pattaya (sample),000-000-0037,"Sample address 37, Pattaya",Fon-Mango,Pattaya,grow_shop,2025-10-23
+C038,CUST-038,Coconut Hydroponics Udon Thani (sample),000-000-0038,"Sample address 38, Udon Thani",Art-Coconut,Udon Thani,grow_shop,2025-10-23
+C039,CUST-039,Bamboo Grow House Khon Kaen (sample),000-000-0039,"Sample address 39, Khon Kaen",Ploy-Bamboo,Khon Kaen,grow_shop,2025-10-23
+C040,CUST-040,Bamboo Hydroponics Nonthaburi (sample),000-000-0040,"Sample address 40, Nonthaburi",Toon-Bamboo,Nonthaburi,retail,2025-10-23

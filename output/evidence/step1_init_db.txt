@@ -1,0 +1,12 @@
+﻿.env: C:\Users\kevin\Desktop\AI Fundation\.env
+数据源: data/sample/
+已重建 C:\Users\kevin\Desktop\AI Fundation\Final Project\data\app.db
+  users                3
+  suppliers            2
+  products            15
+  customers           40
+  sales              462
+  sale_items        1688
+  purchases           56
+  purchase_items     144
+  stock_moves       1838

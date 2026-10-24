@@ -1,0 +1,39 @@
+# Secrets: never commit the real .env (the template .env.example is committed)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Real business data: stays on this machine only, never goes to GitHub
+data/real/*
+!data/real/README.md
+
+# Local database (rebuilt by scripts/init_db.py)
+data/*.db
+data/*.db-journal
+
+# Private planning files (contain business details)
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# Editors / OS / local tool config
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log

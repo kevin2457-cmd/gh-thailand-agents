@@ -1,0 +1,13 @@
+# GH Thailand inventory + CRM agents. Python 3.11+ (developed on Python 3.14).
+# Agents: PydanticAI, calling gpt-6-luna through Portkey's OpenAI-compatible Responses API
+pydantic-ai-slim[openai]==2.43.0
+openai==3.8.0
+pydantic==2.13.5
+httpx==0.28.1
+# Backend API
+fastapi==0.141.1
+uvicorn==0.53.0
+# Loads PORTKEY_API_KEY from .env
+python-dotenv==1.2.3
+# Tests
+pytest==9.1.0
