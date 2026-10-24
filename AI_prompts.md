@@ -36,3 +36,13 @@
 > 第一柜按多的结算（洛杉矶货品清单）。
 > 当量是桶/瓶的个数，价格是美元。
 > 紫粉 Monster Bloom，香味 Floralicious，棉花糖 Bud Candy，鸦片粉 Weight Max，Original 就叫 Original。其他你不懂的中文全部跟我 check。
+
+**Follow-up prompt 2（确认产品名映射）：** 第一次导入有几个产品名不确定是不是同一个产品，需要我确认。
+
+> 第一柜全部按洛杉矶清单算：没问题。
+> GH-Micro-25lb 是 typo，就是 Core。如果你愿意可以给我一个文件夹，我把实际的图片发给你参照。
+> Koolbloom 有液体和粉末两种，看体积参数，lb 是粉，Gal 是液体。
+> PH UP = PH UP Advance，PH Down = PH Down Advance：对的。
+> Green J - 1L = Green Juice，Cal Mg = Cal Mg Plus：对的。
+> 2025 年 2 月到 11 月之间的货柜文件找不到了。
+> Terpinator 按洛杉矶批发价 + 10 估拿货价、售价按到岸成本 × 1.5：没问题。

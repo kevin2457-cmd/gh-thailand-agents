@@ -32,7 +32,7 @@ SUPPLIER = ("S01", "US brands via Los Angeles container", "USA", LEAD_TIME_DAYS)
 CATALOG = [
     ("GH-GROW-25LB", "GH Grow", "25lb", "General Hydroponics", ["GH-Grow-25lb"]),
     ("GH-BLOOM-25LB", "GH Bloom", "25lb", "General Hydroponics", ["GH-Bloom-25lb"]),
-    ("GH-CORE-25LB", "GH Core", "25lb", "General Hydroponics", ["GH-Core-25lb", "GH-Micro-25lb"]),  # 待确认：Micro = Core？
+    ("GH-CORE-25LB", "GH Core", "25lb", "General Hydroponics", ["GH-Core-25lb", "GH-Micro-25lb"]),  # 老板确认：10 月表的 Micro 是 typo
     ("GH-LATE-25LB", "GH Late", "25lb", "General Hydroponics", ["GH-Late-25lb"]),
     ("PRO-GROW-25LB", "Pro Grow", "25lb", "Athena", ["Pro-Grow-25lb"]),
     ("PRO-BLOOM-25LB", "Pro Bloom", "25lb", "Athena", ["Pro-Bloom-25lb"]),
@@ -42,8 +42,8 @@ CATALOG = [
     ("FADE-5G", "Fade", "5G", "Athena", ["Fade 5G", "Fade-5Gallon"]),
     ("TRISHIELD-1G", "Trishield", "1G", "", ["Trishield 1G"]),
     ("TRISHIELD-5G", "Trishield", "5G", "", ["Trishield 5G"]),
-    ("GREEN-JUICE-1L", "Green Juice", "1L", "", ["Green Juice", "Green J - 1L"]),  # 待确认：同一个产品？
-    ("PH-UP", "pH Up", "", "", ["PH UP", "PH UP Advance"]),  # 待确认：Advance 是同一个产品？
+    ("GREEN-JUICE-1L", "Green Juice", "1L", "", ["Green Juice", "Green J - 1L"]),  # 老板确认是同一个
+    ("PH-UP", "pH Up", "", "", ["PH UP", "PH UP Advance"]),  # 老板确认是同一个
     ("PH-DOWN", "pH Down", "", "", ["PH Down", "PH Down Advance"]),
     ("CARBOLOAD", "Carboload", "", "Advanced Nutrients", ["Carboload"]),
     ("OVERDRIVE", "Overdrive", "", "Advanced Nutrients", ["Overdrive"]),
@@ -54,11 +54,13 @@ CATALOG = [
     ("CLONEX-GEL-1L", "CloneX Gel", "1L", "", ["CloneX GEL - 1L"]),
     ("CUTS-14OZ", "Cuts", "14oz", "", ["Cuts-14OZ", "Cuts 14oz"]),
     ("ORIGINAL-1L", "Original", "1L", "", ["Original - 1L", "Original"]),
-    ("KOOLBLOOM", "Koolbloom", "", "General Hydroponics", ["Koolbloom", "Koolbloom 粉 16lb"]),  # 待确认：液体和 16lb 粉是同一个？
+    # 老板确认：Koolbloom 有液体和粉两种，lb 是粉，Gal 是液体。2/4 月表没写规格，拿货价 140（粉是 120），暂按液体，待确认规格
+    ("KOOLBLOOM-LIQUID", "Koolbloom (liquid)", "", "General Hydroponics", ["Koolbloom", "Liquid Koolbloom", "Koolbloom 液体"]),
+    ("KOOLBLOOM-16LB", "Koolbloom (powder)", "16lb", "General Hydroponics", ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
     ("CYCO-SUPA-STICKY", "Cyco Supa Sticky", "", "Cyco", ["Cyco Supa Sticky"]),
     ("MONSTER-BLOOM", "Monster Bloom", "", "General Hydroponics", ["Monster Bloom", "紫粉"]),
     ("WEIGHT-MAX", "Weight Max", "", "", ["Weight Max", "WeightMax", "鸦片粉"]),
-    ("CAL-MG-PLUS", "Cal Mg Plus", "", "", ["Cal Mg Plus", "Cal Mg"]),
+    ("CAL-MG-PLUS", "Cal Mg Plus", "", "", ["Cal Mg Plus", "Cal Mg"]),  # 老板确认是同一个
     ("BIOROOT", "Bioroot", "", "", ["Bioroot"]),
     ("FLORALICIOUS", "Floralicious", "", "General Hydroponics", ["Floralicious", "香味"]),
     ("PRO-TEKT", "Pro-Tekt", "", "", ["Pro-Tekt"]),
@@ -70,6 +72,8 @@ CATALOG = [
 
 # 每个货柜：读哪个文件、日期。到货日期按文件夹名；下单日期 = 到货 - 60 天（老板确认按 2 个月算）。
 # 第一柜：数量按"洛杉矶 货品清单"的总计列（老板确认按多的结算），价格按"泰国 药水核算"。
+# 2025 年 2 月到 11 月之间的货柜文件已经找不到。当前库存以最后一次盘点为准，所以这段缺口不影响库存，
+# 只影响那段时间的采购统计（报告里要说明）。
 CONTAINERS = [
     {"id": "PO-R01", "label": "第一柜", "qty_file": "第一柜/洛杉矶 货品清单.xlsx", "qty_col": "总计",
      "price_file": "第一柜/泰国 药水核算.xlsx", "ordered": date(2024, 12, 16), "arrived": True},
@@ -207,7 +211,7 @@ def main() -> None:
     print(f"\n已写入 {REAL_DIR}：{len(products)} 个产品，{len(purchases)} 个货柜，{len(purchase_items)} 行采购明细")
     print("安全库存暂时为 0，等导入销售数据后按日均销量计算。")
     if checks:
-        print("\n需要确认：")
+        print("\n估算项（不是 Excel 里的原始数字）：")
         for line in checks:
             print(f"  - {line}")
 
