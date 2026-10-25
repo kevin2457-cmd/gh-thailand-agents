@@ -21,7 +21,7 @@ from pathlib import Path
 from dash import ALL, Dash, Input, Output, State, ctx, dcc, html, no_update
 from flask import request
 
-from backend import analytics, orders, runner
+from backend import analytics, customers, orders, runner
 from backend.catalog import CATALOG, candidates, lookup, norm
 from backend.i18n import EXAMPLE_QUESTIONS, t, tr
 from backend.config import DATA_DIR, ROOT_DIR, UNLABELED_CODE, db_path_for, env_file_found, set_active_db
@@ -169,6 +169,45 @@ def header(lang: str, role: str = "U01") -> html.Div:
     ])
 
 
+def profile_panel(lang: str) -> html.Div:
+    """客户档案：选择客户（或新建）→ 编辑资料 → 右边显示购买习惯 → 下面把未标注客户的订单归档。"""
+    def field(key, comp):
+        return html.Div(className="field", children=[html.Label(t(lang, key)), comp])
+
+    return html.Div(className="panel", children=[
+        html.H2(t(lang, "prof_h")),
+        html.Div(className="row", children=[
+            dcc.Dropdown(id="prof-customer", placeholder=t(lang, "prof_pick"), searchable=True, style={"minWidth": "380px"}),
+            html.Button(t(lang, "prof_new"), id="prof-new", className="btn ghost small", n_clicks=0),
+            html.Span(t(lang, "prof_private"), className="muted"),
+        ]),
+        html.Div(id="prof-flash"),
+        html.Div(className="grid-2", style={"marginTop": "12px"}, children=[
+            html.Div([
+                field("f_name", dcc.Input(id="prof-name", type="text", className="text-input")),
+                field("f_wechat", dcc.Input(id="prof-wechat", type="text", className="text-input")),
+                html.Div(className="grid-2", children=[
+                    field("f_phone", dcc.Input(id="prof-phone", type="text", className="text-input")),
+                    field("f_region", dcc.Input(id="prof-region", type="text", className="text-input")),
+                ]),
+                field("f_address", dcc.Input(id="prof-address", type="text", className="text-input")),
+                field("f_type", dcc.Dropdown(id="prof-type", clearable=False, value="grow_shop",
+                                             options=[{"label": t(lang, f"type_{k}"), "value": k} for k in customers.TYPES])),
+                field("f_notes", dcc.Textarea(id="prof-notes", style={"minHeight": "90px"})),
+                html.Button(t(lang, "prof_save"), id="prof-save", className="btn", n_clicks=0),
+            ]),
+            html.Div(id="prof-habits"),
+        ]),
+        html.Div(className="assign-box", children=[
+            html.B(t(lang, "assign_h")),
+            html.Div(className="row", style={"marginTop": "8px"}, children=[
+                dcc.Dropdown(id="prof-assign", multi=True, placeholder=t(lang, "assign_ph"), style={"minWidth": "520px", "flex": "1"}),
+                html.Button(t(lang, "assign_btn"), id="prof-assign-btn", className="btn small", n_clicks=0),
+            ]),
+        ]),
+    ])
+
+
 def chat_tab(lang: str) -> html.Div:
     return html.Div(className="panel", children=[
         html.H2(t(lang, "chat_h")),
@@ -277,7 +316,8 @@ def serve_layout() -> html.Div:
                           className="text-input search-box"),
                 html.Div(id="inventory-body")])),
             tab("tab_customers", "customers", html.Div(className="tab-body", children=[
-                html.Div(id="customers-body"),
+                profile_panel(lang),
+                html.Div(id="customers-body", style={"marginTop": "14px"}),
                 html.Div(className="panel", children=[
                     html.H2(t(lang, "followup_h")),
                     dcc.Loading(type="dot", color="#d4af37", children=html.Div(
@@ -659,17 +699,26 @@ def render_sales(_r, tab, lang):
                 html.B(f"{money(p['total_usd'], 'USD')}  (≈ {money(p['total_usd'] * THB_PER_USD, 'THB')})")]),
             unpaid_line(p["unpaid"], lang),
         ]))
-    head = html.Tr([html.Th(t(lang, "s_period"))] + [html.Th(t(lang, f"pay_{k}")) for k in ("transfer", "cash", "unpaid", "unknown")])
-    rows = [html.Tr([html.Td(t(lang, f"p_{p['period']}"))] + [
-        html.Td(f"{p['by_payment'].get(k, {}).get('orders', 0)} · "
-                f"{money(p['by_payment'].get(k, {}).get('usd', 0) or 0, 'USD')}")
-        for k in ("transfer", "cash", "unpaid", "unknown")]) for p in stats]
+    # 已批准的销售按付款方式分开；"待收"来自审批队列里的未付款单（按规则它们还不能算销售）
+    head = html.Tr([html.Th(t(lang, "s_period"))] + [html.Th(t(lang, k)) for k in
+                                                     ("pay_transfer", "pay_cash", "col_to_collect", "pay_hist")])
+
+    def cell(p, k):
+        v = p["by_payment"].get(k, {})
+        return f"{v.get('orders', 0)} · {money(v.get('usd', 0) or 0, 'USD')}"
+
+    rows = [html.Tr([html.Td(t(lang, f"p_{p['period']}")), html.Td(cell(p, "transfer")), html.Td(cell(p, "cash")),
+                     html.Td(f"{p['unpaid']['orders']} · {money(p['unpaid']['total_usd'], 'USD')}",
+                             className="bad-text" if p["unpaid"]["orders"] else None),
+                     html.Td(cell(p, "unknown"))]) for p in stats]
     return [
         html.Div(className="panel", children=[html.H2(t(lang, "sales_h")),
                                               html.Div(t(lang, "sales_note"), className="muted", style={"marginBottom": "12px"}),
                                               html.Div(className="stat-grid", children=cards)]),
         unpaid_panel(unpaid, m, lang),
-        html.Div(className="panel", children=[html.H2(t(lang, "s_by_pay")), html.Table([head, *rows], className="simple")]),
+        html.Div(className="panel", children=[html.H2(t(lang, "s_by_pay")), html.Table([head, *rows], className="simple"),
+                                              html.Div(t(lang, "pay_table_note"), className="muted",
+                                                       style={"marginTop": "8px"})]),
     ]
 
 
@@ -838,6 +887,90 @@ def write_followup(clicks, lang):
         m = names_map(conn, lang)
     return html.Div(className="msg assistant", style={"maxWidth": "100%"}, children=[
         dcc.Markdown(show_names(r["answer"], m)), render_tools(r["trace"], lang), render_usage(r["usage"], lang)])
+
+
+# ---------------------------------------------------------------- 客户档案
+
+def habits_view(pr: dict, lang: str):
+    if not pr:
+        return None
+    head = [html.B(t(lang, "h_title"))]
+    if not pr["orders"]:
+        return html.Div(head + [html.Div(t(lang, "h_none"), className="muted")])
+    kpis = html.Div(className="kpis", style={"gridTemplateColumns": "repeat(2, 1fr)", "marginTop": "8px"}, children=[
+        html.Div(className="kpi", children=[html.Div(f"{pr['orders']}", className="v"), html.Div(t(lang, "h_orders"), className="l")]),
+        html.Div(className="kpi", children=[html.Div(t(lang, "days", n=pr["avg_gap_days"]) if pr["avg_gap_days"] else "—",
+                                                     className="v"), html.Div(t(lang, "h_gap"), className="l")]),
+        html.Div(className="kpi", children=[html.Div(t(lang, "days", n=pr["days_since_last"]), className="v"),
+                                            html.Div(t(lang, "h_since"), className="l")]),
+        html.Div(className="kpi", children=[html.Div(money(pr["total_usd"], "USD"), className="v"),
+                                            html.Div(f"{t(lang, 'h_spent')} · {money(pr['thb'], 'THB')} + {money(pr['usd'], 'USD')}",
+                                                     className="l")]),
+    ])
+    usual = html.Div([html.B(t(lang, "h_usual") + ": "),
+                      ", ".join(f"{x['name']} ×{x['qty']}" for x in pr["usual_products"])], style={"margin": "6px 0"})
+    rec = [html.Tr([html.Th(t(lang, k)) for k in ("c_last", "col_qty", "s_thb", "s_usd", "pay_l")])] + [
+        html.Tr([html.Td(o["sale_date"]), html.Td(o["units"]), html.Td(money(o["thb"] or 0, "THB")),
+                 html.Td(money(o["usd"] or 0, "USD")), html.Td(t(lang, f"pay_{o['payment_method'] or 'unknown'}"))])
+        for o in pr["recent"]]
+    return html.Div(head + [
+        html.Div(t(lang, "h_first_last", a=pr["first"], b=pr["last"]), className="muted"), kpis, usual,
+        html.B(t(lang, "h_recent")), html.Table(rec, className="simple")])
+
+
+@app.callback(Output("prof-customer", "options"), Input("refresh", "data"), Input("tabs", "value"), State("lang", "data"))
+def profile_options(_r, tab, lang):
+    if tab != "customers":
+        return no_update
+    with db() as conn:
+        rows = conn.execute("SELECT code, name FROM customers WHERE code <> ? ORDER BY name", (UNLABELED_CODE,)).fetchall()
+    return [{"label": f"{r['name']}（{r['code']}）", "value": r["code"]} for r in rows]
+
+
+@app.callback(Output("prof-name", "value"), Output("prof-wechat", "value"), Output("prof-phone", "value"),
+              Output("prof-address", "value"), Output("prof-region", "value"), Output("prof-type", "value"),
+              Output("prof-notes", "value"), Output("prof-habits", "children"), Output("prof-assign", "options"),
+              Input("prof-customer", "value"), Input("refresh", "data"), State("lang", "data"))
+def load_profile(code, _r, lang):
+    with db() as conn:
+        assign_opts = [{"label": f"{s['sale_date']} · {(s['items'] or '')[:70]} · {money(s['total_usd'] or 0, 'USD')}",
+                        "value": s["id"]} for s in customers.unlabeled_sales(conn)]
+        if not code:
+            return "", "", "", "", "", "grow_shop", "", html.Div(t(lang, "prof_new_mode"), className="muted"), assign_opts
+        c = customers.get_customer(conn, code) or {}
+        pr = customers.profile(conn, code, today())
+    return (c.get("name", ""), c.get("wechat_alias", ""), c.get("phone", ""), c.get("address", ""), c.get("region", ""),
+            c.get("type", "grow_shop"), c.get("notes", ""), habits_view(pr, lang), assign_opts)
+
+
+@app.callback(Output("prof-customer", "value", allow_duplicate=True), Input("prof-new", "n_clicks"), prevent_initial_call=True)
+def new_profile(n):
+    return None if n else no_update
+
+
+@app.callback(Output("prof-flash", "children"), Output("prof-customer", "value", allow_duplicate=True),
+              Output("refresh", "data", allow_duplicate=True),
+              Input("prof-save", "n_clicks"), Input("prof-assign-btn", "n_clicks"),
+              State("prof-customer", "value"), State("prof-name", "value"), State("prof-wechat", "value"),
+              State("prof-phone", "value"), State("prof-address", "value"), State("prof-region", "value"),
+              State("prof-type", "value"), State("prof-notes", "value"), State("prof-assign", "value"),
+              State("role", "value"), State("refresh", "data"), State("lang", "data"), prevent_initial_call=True)
+def save_profile(_s, _a, code, name, wechat, phone, address, region, ctype, notes, assign, role, refresh, lang):
+    if not ctx.triggered or not ctx.triggered[0]["value"]:
+        return no_update, no_update, no_update
+    try:
+        with db() as conn:
+            if ctx.triggered_id == "prof-assign-btn":
+                if not code:
+                    return html.Div(t(lang, "assign_need"), className="flash bad"), no_update, no_update
+                n = customers.assign_sales(conn, assign or [], code, role)
+                return html.Div(t(lang, "msg_assigned", n=n, code=code), className="flash ok"), code, (refresh or 0) + 1
+            new_code = customers.save_customer(conn, code, {
+                "name": name, "wechat_alias": wechat, "phone": phone, "address": address, "region": region,
+                "type": ctype, "notes": notes}, role)
+        return html.Div(t(lang, "prof_saved", code=new_code), className="flash ok"), new_code, (refresh or 0) + 1
+    except (ValueError, PermissionError) as e:
+        return html.Div(tr(str(e), lang), className="flash bad"), no_update, no_update
 
 
 # ---------------------------------------------------------------- 用量与审计

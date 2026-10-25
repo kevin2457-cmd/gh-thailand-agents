@@ -30,6 +30,7 @@ MIGRATIONS = [
     ("pending_records", "payment_file", "TEXT"),
     ("sales", "payment_method", "TEXT NOT NULL DEFAULT 'unknown'"),
     ("sales", "payment_file", "TEXT"),
+    ("customers", "notes", "TEXT NOT NULL DEFAULT ''"),  # 客户档案备注（购买习惯、偏好……），只存在本地
 ]
 _migrated: set[str] = set()
 

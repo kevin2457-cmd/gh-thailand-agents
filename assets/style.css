@@ -194,3 +194,9 @@ table.simple tr:hover td { background: rgba(212, 175, 55, 0.04); }
 .card.unpaid { border-left-color: var(--bad); border-color: rgba(255, 123, 123, 0.55); }
 .upload.small { padding: 10px; font-size: 13px; margin: 0; flex: 1; }
 .pay-fix { display: flex; gap: 10px; align-items: stretch; margin: 8px 0; flex-wrap: wrap; }
+
+.bad-text { color: var(--bad); font-weight: 700; }
+
+/* customer profile */
+.assign-box { margin-top: 14px; padding: 12px; border: 1px dashed var(--gold-dark); border-radius: 10px; }
+.dash-dropdown-value-item, .dash-dropdown-multi-value { color: var(--text); }

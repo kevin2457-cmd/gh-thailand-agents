@@ -47,7 +47,8 @@ CREATE TABLE customers (
     wechat_alias  TEXT,                          -- 微信里显示的名字
     region        TEXT NOT NULL,
     type          TEXT NOT NULL CHECK (type IN ('grow_shop', 'farm', 'reseller', 'retail')),
-    created_at    TEXT NOT NULL                  -- YYYY-MM-DD
+    created_at    TEXT NOT NULL,                 -- YYYY-MM-DD
+    notes         TEXT NOT NULL DEFAULT ''       -- 客户档案备注，只存在本地，不发给模型
 );
 
 CREATE TABLE sales (
