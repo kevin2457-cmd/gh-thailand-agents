@@ -26,7 +26,8 @@ Staff paste orders straight from WeChat, Excel or the owner's sales notes. An in
    - **问答 (Q&A):** click an example question, for example 哪些产品需要马上补货？ The answer shows the tools used and the token cost.
    - **录单 (order entry):** switch the role (top right) to 员工 (staff) and click one of the three examples: a normal order, an order with an arithmetic error, or an order containing a prompt-injection attack. Then click 解析并提交审批.
    - **审批队列 (approvals):** switch to 老板 (owner) to approve or reject. Blocking issues disable the approve button, and staff can never approve.
-   - **库存与补货 / 客户 / 用量与审计:** reorder plan, dormant customers with follow-up messages, measured token usage and the audit log.
+   - **库存与补货 / 用量与审计:** reorder plan with a search box, measured token usage and the audit log.
+   - **客户 (customers):** editable customer profiles with buying habits, a total-spend ranking, dormant customers with follow-up messages, and assigning old orders that have no customer.
 5. **Tests (optional, no API key needed):** `python -m pytest -q`
 
 If port 8050 is busy, use `PORT=8051 python app.py` on macOS/Linux, or `$env:PORT=8051; python app.py` in PowerShell.
@@ -35,7 +36,7 @@ If port 8050 is busy, use `PORT=8051 python app.py` on macOS/Linux, or `$env:POR
 
 | Dataset | Where | In git? | What it is |
 |---|---|---|---|
-| Sample (default) | `data/sample/` → `data/app.db` | Yes (CSVs) | The real 43-SKU product catalog; synthetic customers, orders, prices and stock (one year, 40 customers) |
+| Sample (default) | `data/sample/` → `data/app.db` | Yes (CSVs) | The real 44-SKU product catalog; synthetic customers, orders, prices and stock (one year, 40 customers) |
 | Real | `data/real/` → `data/real.db` | **No** (gitignored) | The owner's container sheets, stocktake and orders; stays on the owner's computer |
 
 Switching datasets:
@@ -79,15 +80,16 @@ Every product spelling and Chinese nickname maps to one standard SKU in `backend
 ## Layout
 
 ```
-app.py                Dash UI (6 pages, staff/owner role switch)
+app.py                Dash UI (7 tabs, staff/owner role switch)
 backend/agents.py     intake, orchestrator, inventory and CRM agents (PydanticAI) + read-only tools
 backend/orders.py     redaction, validation, pending queue, owner approval, audit log
 backend/analytics.py  deterministic reorder, dormant customers, history, sales
-backend/catalog.py    43 standard SKUs with spellings and Chinese nicknames
+backend/customers.py  customer profiles, buying habits, total-spend ranking, missing-price fixes
+backend/catalog.py    44 standard SKUs with spellings and Chinese nicknames
 backend/llm.py        gpt-6-luna via Portkey; token usage per request and agent
 prompts/              agent instructions
 scripts/              data import, sample data, evidence and docs builders
-tests/                25 tests (no API key needed)
+tests/                40 tests (no API key needed)
 output/               screenshots and evidence for the report
 AI_prompts.md         every prompt I gave the coding assistant
 ```
