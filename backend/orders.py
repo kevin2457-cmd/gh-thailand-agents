@@ -123,7 +123,8 @@ def duplicate_check(conn: sqlite3.Connection, lines: list[dict], order_date: str
     for ref, d, code, items in others:
         if items != mine:
             continue
-        same_customer = customer_code is not None and code == customer_code
+        # "未标注客户"不是同一个客户（老板确认：报告里 6.25 有两单碰巧完全一样，是两个客户）
+        same_customer = customer_code is not None and code == customer_code and code != UNLABELED_CODE
         close = abs((date.fromisoformat(d) - d0).days) <= DUP_SAME_CUSTOMER_DAYS
         if same_customer and close:
             block.append(f"疑似重复录单：和{ref}（{d}，{code}）的客户、产品和数量完全一样")

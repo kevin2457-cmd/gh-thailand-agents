@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GH Thailand Inventory + CRM Agents — Final Report</title>
 <style>
-  :root { --ink:#1b1720; --muted:#5f5868; --line:#e7e1ea; --pink:#d6337f; --pink-soft:#fde8f2; --dark:#0f0d13; }
+  :root { --ink:#1b2a1e; --muted:#5e6f61; --line:#dbe8d7; --pink:#2e7d32; --pink-soft:#e8f5e9; --dark:#ffffff; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: "Inter","Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink);
-         line-height:1.6; font-size:15.5px; background:#faf8fb; }
+         line-height:1.6; font-size:15.5px; background:#f4f9f2; }
   .page { max-width: 900px; margin: 0 auto; padding: 48px 40px 80px; background:#fff; }
   h1 { font-size: 30px; margin: 0 0 6px; line-height:1.2; }
   h2 { font-size: 21px; margin: 44px 0 10px; padding-top: 10px; border-top: 3px solid var(--pink); }
@@ -19,7 +19,7 @@
   .links a { color: var(--pink); }
   table { width:100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
   th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
-  th { background: #f6f1f7; font-weight: 600; }
+  th { background: #eef6ec; font-weight: 600; }
   td.n, th.n { text-align: right; white-space: nowrap; }
   .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
   .kpi { border:1px solid var(--line); border-radius: 12px; padding: 10px 12px; background:#fff; }
@@ -31,7 +31,7 @@
   .note { background: var(--pink-soft); border-left: 4px solid var(--pink); padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 14.5px; }
   .quote { font-size: 17px; border-left: 4px solid var(--pink); padding: 6px 14px; margin: 14px 0; }
   .muted { color: var(--muted); font-size: 13.5px; }
-  code { background:#f4eff6; padding: 1px 5px; border-radius: 4px; font-size: 13.5px; }
+  code { background:#eef6ec; padding: 1px 5px; border-radius: 4px; font-size: 13.5px; }
   ol.steps li { margin: 6px 0; }
   .pill { display:inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
   .ok { background:#e2f7ee; color:#11734d; } .bad { background:#fde3e8; color:#a3123a; }
@@ -48,11 +48,11 @@
 <div class="page">
 
 <!-- 1. Title and links -->
-<h1>GH Thailand Inventory + CRM Agents</h1>
+<h1 style="display:flex;align-items:center;gap:12px"><img src="{{LEAF}}" alt="" style="width:44px;height:44px">GH Thailand Inventory + CRM Agents</h1>
 <p class="lead">A multi-agent app that turns WeChat orders for the sole official General Hydroponics distributor in
 Thailand into owner-approved database records, and tells the owner what to reorder and which customers to call.</p>
 <p class="links"><b>Chirong (Kevin) Yang</b> · MGT 409 Final Project · October 2026<br>
-Repo: <a href="{{REPO_URL}}">{{REPO_URL}}</a> · Runs locally: <code>python app.py</code> (README has the 5 steps)</p>
+Repo: <a href="{{REPO_URL}}">{{REPO_URL}}</a> · Runs locally: <code>python app.py</code> (step-by-step in the README)</p>
 
 <div class="kpis">
   <div class="kpi"><b>{{REAL_ORDERS}}</b><span>real orders parsed by the intake agent</span></div>
@@ -217,7 +217,7 @@ dollars of lost sales a year.</p>
   <tr><td>Order of 3 Sep missing from the Word report</td><td class="n">US$1,778</td><td>WeChat screenshot</td></tr>
   <tr><td>Lines sold below the suggested floor price (from the container price sheets)</td><td class="n">{{BELOW_FLOOR}} lines</td><td>Code check</td></tr>
 </table>
-<p>The owner then reviewed and approved all {{REAL_APPROVED}} orders one by one in the app, choosing the two missing sizes
+<p>The owner then reviewed and approved all {{REAL_ORDERS}} imported orders one by one in the app, choosing the two missing sizes
 himself (杀虫剂 → Trishield 5G, 向日葵 → Floralicious Plus 6gal). The audit log shows the whole review took
 <b>under 2 minutes</b> (first to last approval: 1 min 52 s). Copying the same 41 orders by hand at the owner's
 2 minutes each is about 80 minutes. The reorder plan now runs on real sales:</p>
@@ -263,7 +263,7 @@ approving or rejecting all 4 within 10 seconds.</p>
 <ul>
   <li><b>History is incomplete</b>: container files from Feb–Nov 2025 are lost, and 33 historical orders have no customer
       recorded, so customer analytics on real data starts thin; new orders are recorded with the customer from now on.</li>
-  <li><b>Reorder uses recorded sales only</b>: daily rates come from approved orders (41 so far, June–October), so products
+  <li><b>Reorder uses recorded sales only</b>: daily rates come from approved orders ({{REAL_APPROVED}} so far, June–October), so products
       with sparse history look slower than they are. No seasonality, MOQ, container capacity or cash-flow limits yet.</li>
   <li><b>Text only</b>: orders are pasted as text; reading WeChat screenshots and invoice photos directly is the next step,
       then a direct WeChat/LINE connection.</li>

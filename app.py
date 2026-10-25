@@ -106,7 +106,7 @@ def header(lang: str, role: str = "U01") -> html.Div:
     other = "zh" if lang == "en" else "en"
     return html.Div(className="header", children=[
         html.Div(className="brand", children=[
-            html.Div(className="brand-dot"),
+            html.Img(src=app.get_asset_url("leaf.svg"), className="brand-logo", alt="cannabis leaf"),
             html.Div([html.H1(t(lang, "title")), html.Div(t(lang, "subtitle"), className="sub")]),
         ]),
         html.Div(className="header-right", children=[
@@ -173,7 +173,7 @@ def intake_tab(lang: str) -> html.Div:
         ]),
         html.Div(className="panel", children=[
             html.H2(t(lang, "result_h")),
-            dcc.Loading(type="dot", color="#ff4fa3", children=html.Div(
+            dcc.Loading(type="dot", color="#2e7d32", children=html.Div(
                 id="intake-result", children=html.Div(t(lang, "result_empty"), className="muted"))),
         ]),
     ])
@@ -208,7 +208,7 @@ def serve_layout() -> html.Div:
                 html.Div(id="customers-body"),
                 html.Div(className="panel", children=[
                     html.H2(t(lang, "followup_h")),
-                    dcc.Loading(type="dot", color="#ff4fa3", children=html.Div(
+                    dcc.Loading(type="dot", color="#2e7d32", children=html.Div(
                         id="followup-out", children=html.Div(t(lang, "followup_hint"), className="muted"))),
                 ])])),
             tab("tab_usage", "usage", html.Div(id="usage-body", className="tab-body")),

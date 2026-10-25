@@ -5,32 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GH Thailand Inventory + CRM Agents — Slides</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
 <style>
-  :root { --r-background-color:#0b0b0f; --r-main-color:#f4f1f6; --r-heading-color:#ffffff; --r-link-color:#ff8cc6;
+  :root { --r-background-color:#f4f9f2; --r-main-color:#1b2a1e; --r-heading-color:#1b5e20; --r-link-color:#2e7d32;
           --r-main-font: "Inter","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; --r-heading-font: var(--r-main-font);
           --r-main-font-size: 34px; }
   .reveal h1, .reveal h2 { text-transform: none; letter-spacing: 0; }
   .reveal h2 { font-size: 1.55em; margin-bottom: .5em; }
-  .reveal h2 .pink, .pink { color: #ff4fa3; }
-  .reveal .sub { color: #a9a3b3; font-size: .7em; }
-  .reveal .big { font-size: 2.3em; font-weight: 800; color: #ff4fa3; line-height: 1; }
+  .reveal h2 .pink, .pink { color: #2e7d32; }
+  .reveal .sub { color: #5e6f61; font-size: .7em; }
+  .reveal .big { font-size: 2.3em; font-weight: 800; color: #2e7d32; line-height: 1; }
   .reveal .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 20px; }
   .reveal .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: center; }
-  .reveal .card { background: #15151c; border: 1px solid #2c2c3a; border-radius: 16px; padding: 18px 16px; text-align: left; }
-  .reveal .card p { margin: 6px 0 0; font-size: .62em; color: #c9c3d1; }
+  .reveal .card { background: #ffffff; border: 1px solid #dbe8d7; border-radius: 16px; padding: 18px 16px; text-align: left; }
+  .reveal .card p { margin: 6px 0 0; font-size: .62em; color: #5e6f61; }
   .reveal ul { font-size: .78em; } .reveal li { margin: 10px 0; }
-  .reveal img.shot { border-radius: 12px; border: 1px solid #2c2c3a; max-height: 520px; margin: 0; }
+  .reveal img.shot { border-radius: 12px; border: 1px solid #dbe8d7; max-height: 520px; margin: 0; }
   .reveal svg.diagram { width: 100%; height: auto; border-radius: 14px; }
-  .reveal table { font-size: .55em; margin: 10px auto; } .reveal table th { color: #ff8cc6; }
-  .reveal .quote { font-size: .9em; border-left: 6px solid #ff4fa3; padding-left: 18px; text-align: left; }
-  .reveal small { color: #a9a3b3; }
+  .reveal table { font-size: .55em; margin: 10px auto; } .reveal table th { color: #1b5e20; }
+  .reveal .quote { font-size: .9em; border-left: 6px solid #2e7d32; padding-left: 18px; text-align: left; }
+  .reveal small { color: #5e6f61; }
+  .reveal-viewport { background: #f4f9f2 url('{{LEAF_FAINT}}') no-repeat right 28px bottom 24px / 200px auto; }
 </style>
 </head>
 <body>
 <div class="reveal"><div class="slides">
 
 <section>
+  <img src="{{LEAF}}" alt="" style="width:110px;margin:0 auto 10px;display:block">
   <h1 style="font-size:2.1em">GH Thailand <span class="pink">Inventory + CRM</span> Agents</h1>
   <p>WeChat orders → owner-approved records → reorder &amp; follow-up</p>
   <p class="sub">Chirong (Kevin) Yang · MGT 409 Final Project · sole official General Hydroponics distributor in Thailand (&gt;US$1M/yr)</p>
@@ -114,7 +116,7 @@
   <div class="grid">
     <div class="card"><div class="big">{{REAL_CLEAN}}/{{REAL_ORDERS}}</div><p>real orders parsed clean; {{REAL_WARN}} flagged for review, {{REAL_BLOCKED}} needed a size choice</p></div>
     <div class="card"><div class="big">≈$920</div><p>3 arithmetic / recording errors found in 4 months of the owner's own records</p></div>
-    <div class="card"><div class="big">&lt; 2 min</div><p>for the owner to review and approve all {{REAL_APPROVED}} parsed orders (≈ 80 min by hand)</p></div>
+    <div class="card"><div class="big">&lt; 2 min</div><p>for the owner to review and approve all {{REAL_ORDERS}} parsed orders (≈ 80 min by hand)</p></div>
   </div>
   {{SLIDE_QUOTE}}
   {{STAFF_SLIDE}}

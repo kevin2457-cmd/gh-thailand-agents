@@ -134,6 +134,18 @@ def test_duplicate_order_is_caught(conn):
     assert any("可能重复" in w for w in other["warnings"]) and not any("重复" in b for b in other["blocking"])
 
 
+def test_unlabeled_customers_are_not_the_same_customer(conn):
+    # 真实情况：报告里 6.25 有两单碰巧完全一样，都是"未标注客户"，不能当成重复拦下
+    from backend.orders import ensure_customer
+    ensure_customer(conn, "UNLABELED")
+    d = draft({"product_text": "Big Bud", "qty": 2, "unit_price": 600, "currency": "USD"}, order_date="2026-06-25")
+    first = validate(conn, d, "", TODAY, customer_code="UNLABELED")
+    submit(conn, customer_code="UNLABELED", checked=first, source_type="report", source_text="", submitted_by="U01")
+    second = validate(conn, d, "", TODAY, customer_code="UNLABELED")
+    assert not any("重复" in b for b in second["blocking"])
+    assert any("可能重复" in w for w in second["warnings"])
+
+
 def test_reject(conn):
     d = draft({"product_text": "Big Bud", "qty": 1, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
     pid = submit(conn, customer_code="CUST-002", checked=validate(conn, d, "", TODAY), source_type="chat",
