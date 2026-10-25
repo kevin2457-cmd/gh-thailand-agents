@@ -79,6 +79,10 @@ def read_table(path: Path) -> tuple[list[dict], dict]:
     return items, totals
 
 
+# 老板 10/25 直接给的新产品价格（泰铢按 1 USD = 33.1 THB 折美元）
+MANUAL_PRICES = {"ATH-IPM-5G": {"price": round(18000 / 33.1, 2), "floor": round(14400 / 33.1, 2)}}
+
+
 def num(v) -> float:
     return float(v) if isinstance(v, (int, float)) else 0.0
 
@@ -142,6 +146,9 @@ def main() -> None:
         if p is None and sku in EARLY_STOCK_SKUS:  # 早期货柜进的货：采购文件缺失，进价未知
             p = {"cost": 0.0, "freight": 0.0, "price": 0.0, "floor": 0.0}
             checks.append(f"{sku}：早期货柜进的货，采购文件缺失，进价和售价暂记 0")
+        if p is None and sku in MANUAL_PRICES:  # 老板后来直接给的新产品价格（采购 Excel 里还没有）
+            p = {"cost": 0.0, "freight": 0.0, **MANUAL_PRICES[sku]}
+            checks.append(f"{sku}：老板直接给的价格，进价暂记 0")
         # 从没进过货、也没有正式报价的产品（例如第一柜里数量为 0 的 Emerald）不进目录
         if p is None or (sku not in purchased and not isinstance(p["price"], (int, float))):
             continue

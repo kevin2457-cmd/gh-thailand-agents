@@ -31,6 +31,8 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("ATH-CLEANSE-5G", "Athena Cleanse", "5G", "Athena", ["Cleanse 5G", "Cleanse-5Gallon", "Athena Cleanse"]),
     ("ATH-FADE-5G", "Athena Fade", "5G", "Athena", ["Fade 5G", "Fade-5Gallon", "Athena Fade"]),
     ("ATH-CUTS-14OZ", "Athena Cuts", "14oz", "Athena", ["Cuts-14OZ", "Cuts 14oz", "Cuts"]),
+    # 老板 10/25 新加：Athena 杀虫剂，只卖 5G；售价 18,000 泰铢，底价 14,400 泰铢（采购 Excel 里还没有）
+    ("ATH-IPM-5G", "Athena IPM", "5G", "Athena", ["IPM", "IPM 5G", "Athena IPM", "IPM-5Gallon"]),
     ("TRISHIELD-1G", "Trishield", "1G", "General Hydroponics", ["Trishield 1G", "Trishield 1 gal"]),
     ("TRISHIELD-5G", "Trishield", "5G", "General Hydroponics", ["Trishield 5G"]),
     # 老板确认：Green J - 1L 就是 Green Juice；pH Up/Down 和 Advance 是同一个
