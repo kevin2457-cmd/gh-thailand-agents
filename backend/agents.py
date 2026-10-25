@@ -191,7 +191,8 @@ async def ask(question: str, *, today: date | None = None, db_path: Path | None 
 
 
 async def intake(text: str, *, customer_code: str, submitted_by: str, source_type: str = "wechat",
-                 today: date | None = None, db_path: Path | None = None, hint: str = "") -> dict:
+                 today: date | None = None, db_path: Path | None = None, hint: str = "",
+                 order_date: str | None = None) -> dict:
     """录单：脱敏 -> 录单 agent 解析 -> 代码校验 -> 写入待审批队列。返回待审批编号、校验结果、用量。"""
     db_path = db_path or active_db()
     deps = Deps(db_path=db_path, today=today or date.today(), run_id=new_run_id("intake"))
@@ -214,7 +215,17 @@ async def intake(text: str, *, customer_code: str, submitted_by: str, source_typ
                 draft = OrderDraft(lines=[], suspicious_instructions=["(模型服务商的内容安全过滤拦截了这段文字)"])
             finally:
                 current_agent.reset(token)
+        # 页面上选的订单日期：订单文字里没写日期时用它；两边都有但不一致时，按文字记录并提醒老板核对
+        date_note = None
+        if order_date:
+            if not draft.order_date:
+                draft.order_date = order_date
+            elif draft.order_date != order_date:
+                date_note = (f"订单文字里的日期是 {draft.order_date}，录单时选的是 {order_date}：已按订单文字记录，"
+                             f"请核对")
         checked = validate(conn, draft, safe_text, deps.today)
+        if date_note:
+            checked["warnings"].insert(0, date_note)
         if filtered:
             audit(conn, "intake-agent", "agent", "blocked", "intake", deps.run_id,
                   {"reason": "provider content filter (Azure Prompt Shields)"})

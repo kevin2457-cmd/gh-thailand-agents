@@ -135,9 +135,16 @@ def intake_tab() -> html.Div:
                 dcc.Input(id="intake-new-customer", type="text", placeholder="或者输入新客户名字（例如微信群名）",
                           className="text-input", style={"marginTop": "8px"}),
             ]),
-            html.Div(className="field", children=[
-                html.Label("来源"),
-                dcc.RadioItems(id="intake-source", value="wechat", inline=True, options=SOURCE_OPTIONS),
+            html.Div(className="row", children=[
+                html.Div(className="field", children=[
+                    html.Label("订单日期 YYYY-MM-DD（文字里没写日期时用这个）"),
+                    dcc.Input(id="intake-date", type="text", value=date.today().isoformat(), placeholder="2026-10-20",
+                              debounce=False, className="text-input", style={"width": "150px"}),
+                ]),
+                html.Div(className="field", style={"marginLeft": "18px"}, children=[
+                    html.Label("来源"),
+                    dcc.RadioItems(id="intake-source", value="wechat", inline=True, options=SOURCE_OPTIONS),
+                ]),
             ]),
             html.Div(className="field", children=[
                 html.Label("订单文字（从微信 / Excel / 报告直接粘贴）"),
@@ -311,11 +318,18 @@ def render_check(r: dict, m: dict[str, str]) -> list:
 @app.callback(Output("intake-result", "children"), Output("refresh", "data", allow_duplicate=True),
               Input("intake-submit", "n_clicks"),
               State("intake-text", "value"), State("intake-customer", "value"), State("intake-new-customer", "value"),
-              State("intake-source", "value"), State("role", "value"), State("refresh", "data"),
-              prevent_initial_call=True)
-def submit_order(_n, text, customer, new_customer, source, role, refresh):
+              State("intake-source", "value"), State("intake-date", "value"), State("role", "value"),
+              State("refresh", "data"), prevent_initial_call=True)
+def submit_order(_n, text, customer, new_customer, source, order_date, role, refresh):
     if not (text or "").strip():
         return html.Div("请先粘贴订单文字。", className="flash bad"), no_update
+    order_date = (order_date or "").strip()
+    if order_date:
+        try:
+            if date.fromisoformat(order_date) > today():
+                return html.Div("订单日期不能在未来。", className="flash bad"), no_update
+        except ValueError:
+            return html.Div("订单日期格式要写成 2026-10-20。", className="flash bad"), no_update
     from backend.agents import intake
     try:
         with db() as conn:
@@ -324,7 +338,8 @@ def submit_order(_n, text, customer, new_customer, source, role, refresh):
             m = names_map(conn)
         if not customer:
             return html.Div("请选择客户。", className="flash bad"), no_update
-        r = runner.run(intake(text, customer_code=customer, submitted_by=role, source_type=source, today=today()))
+        r = runner.run(intake(text, customer_code=customer, submitted_by=role, source_type=source, today=today(),
+                              order_date=order_date or None))
     except Exception as e:
         return html.Div(f"出错了：{type(e).__name__}: {e}", className="flash bad"), no_update
     return render_check(r, m), (refresh or 0) + 1

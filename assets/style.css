@@ -100,6 +100,13 @@ button.dash-dropdown svg, button.dash-dropdown path { color: var(--pink-2) !impo
 .dash-dropdown-option:hover, .dash-dropdown-option[aria-selected="true"] { background: var(--pink-dim) !important; }
 .dash-textarea::placeholder, input::placeholder { color: #7d7688; }
 
+/* date picker dark */
+.SingleDatePickerInput, .DateInput, .DateInput_input { background: var(--panel-2) !important; color: var(--text) !important;
+  border-color: var(--line) !important; border-radius: 10px; font-size: 15px; }
+.SingleDatePickerInput { border: 1px solid var(--line) !important; overflow: hidden; }
+.CalendarDay__selected, .CalendarDay__selected:hover { background: var(--pink) !important; border-color: var(--pink) !important; }
+.DateInput_input__focused { border-bottom-color: var(--pink) !important; }
+
 /* dash dropdown dark (Dash 2/3 class names) */
 .Select-control, .Select-menu-outer, .Select-option, .Select-value-label, .VirtualizedSelectOption {
   background: var(--panel-2) !important; color: var(--text) !important; border-color: var(--line) !important; }
