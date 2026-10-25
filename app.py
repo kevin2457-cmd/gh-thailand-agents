@@ -844,10 +844,7 @@ def render_customers(_r, tab, lang):
     with db() as conn:
         m = names_map(conn, lang)
         dormant = analytics.dormant_customers(conn, today())
-        allc = conn.execute(
-            """SELECT c.code, c.region, COUNT(s.id) AS n, MAX(s.sale_date) AS last
-               FROM customers c LEFT JOIN sales s ON s.customer_id = c.id WHERE c.code <> ?
-               GROUP BY c.id ORDER BY last DESC""", (UNLABELED_CODE,)).fetchall()
+        sp = customers.spend_ranking(conn)
     head = html.Tr([html.Th(t(lang, k) if k else "") for k in ("col_customer", "c_orders", "c_gap", "c_silent", "c_overdue",
                                                            "c_usual", "")])
     body = [html.Tr([
@@ -858,17 +855,33 @@ def render_customers(_r, tab, lang):
         html.Td(html.Button(t(lang, "followup_btn"), id={"type": "followup", "code": d["customer"]}, className="btn small",
                             n_clicks=0)),
     ]) for d in dormant]
-    all_rows = [html.Tr([html.Th(t(lang, k)) for k in ("col_customer", "c_region", "c_orders", "c_last")])] + [
-        html.Tr([html.Td(m.get(r["code"], r["code"])), html.Td(r["region"]), html.Td(r["n"]), html.Td(r["last"] or "—")])
-        for r in allc]
+    allc = sp["rows"]
+    all_rows = [html.Tr([html.Th(t(lang, k)) for k in ("c_rank", "col_customer", "c_region", "c_orders", "s_thb", "s_usd",
+                                                       "c_total", "c_share", "c_avg_order", "c_last")])] + [
+        html.Tr([html.Td(i), html.Td([html.Div(m.get(r["code"], r["code"])), html.Div(r["code"], className="muted")]),
+                 html.Td(r["region"]), html.Td(r["orders"]), html.Td(money(r["thb"], "THB")),
+                 html.Td(money(r["usd"], "USD")), html.Td(html.B(money(r["total_usd"], "USD"))), html.Td(f"{r['share']}%"),
+                 html.Td(money(r["avg_order_usd"], "USD") if r["orders"] else "—"), html.Td(r["last"] or "—")])
+        for i, r in enumerate(allc, 1)]
+    spend_kpis = html.Div(className="kpis", style={"gridTemplateColumns": "repeat(3, 1fr)", "marginBottom": "10px"}, children=[
+        html.Div(className="kpi", children=[html.Div(money(sp["total_usd"], "USD"), className="v"),
+                                            html.Div(t(lang, "spend_total"), className="l")]),
+        html.Div(className="kpi", children=[html.Div(money(sp["thb"], "THB"), className="v"),
+                                            html.Div(t(lang, "s_thb"), className="l")]),
+        html.Div(className="kpi", children=[html.Div(money(sp["usd"], "USD"), className="v"),
+                                            html.Div(t(lang, "s_usd"), className="l")]),
+    ])
     return [
         html.Div(className="panel", children=[
             html.H2(t(lang, "dormant_h", n=len(dormant))),
             html.Div(t(lang, "dormant_rule"), className="muted", style={"marginBottom": "10px"}),
             html.Table([head, *body], className="simple") if dormant else html.Div(t(lang, "no_dormant"), className="muted"),
         ]),
-        html.Div(className="panel", children=[html.H2(t(lang, "all_customers_h", n=len(allc))),
-                                              html.Table(all_rows, className="simple")]),
+        html.Div(className="panel", children=[
+            html.H2(t(lang, "all_customers_h", n=len(allc))), spend_kpis,
+            html.Div(t(lang, "spend_note", n=sp["unlabeled_orders"], usd=money(sp["unlabeled_usd"], "USD"))
+                     if sp["unlabeled_orders"] else t(lang, "spend_note_all"), className="muted", style={"marginBottom": "8px"}),
+            html.Table(all_rows, className="simple")]),
     ]
 
 

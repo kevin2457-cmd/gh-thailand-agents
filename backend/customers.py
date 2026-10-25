@@ -111,3 +111,23 @@ def assign_sales(conn: sqlite3.Connection, sale_ids: list[str], code: str, user_
     audit(conn, user_id, role, "assign_sales", "customers", code, {"sales": list(sale_ids), "updated": n})
     conn.commit()
     return n
+
+
+def spend_ranking(conn: sqlite3.Connection) -> dict:
+    """每位客户的累计消费（按原币种 + 折合美元），从高到低排；另给出全部客户合计和"未标注客户"的金额。"""
+    rows = [dict(r) for r in conn.execute(
+        """SELECT c.code, c.region, COUNT(DISTINCT s.id) AS orders, MAX(s.sale_date) AS last,
+                  COALESCE(SUM(CASE WHEN si.currency = 'THB' THEN si.qty * si.unit_price * si.discount END), 0) AS thb,
+                  COALESCE(SUM(CASE WHEN si.currency IN ('USD', 'USDT') THEN si.qty * si.unit_price * si.discount END), 0) AS usd,
+                  COALESCE(SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)), 0) AS total_usd
+           FROM customers c LEFT JOIN sales s ON s.customer_id = c.id LEFT JOIN sale_items si ON si.sale_id = s.id
+           GROUP BY c.id""")]
+    unl = next((r for r in rows if r["code"] == UNLABELED_CODE), None)
+    rows = sorted((r for r in rows if r["code"] != UNLABELED_CODE), key=lambda r: (-r["total_usd"], r["code"]))
+    total = sum(r["total_usd"] for r in rows)
+    for r in rows:
+        r["share"] = round(100 * r["total_usd"] / total, 1) if total else 0.0
+        r["avg_order_usd"] = round(r["total_usd"] / r["orders"], 2) if r["orders"] else 0.0
+    return {"rows": rows, "total_usd": round(total, 2), "thb": round(sum(r["thb"] for r in rows), 2),
+            "usd": round(sum(r["usd"] for r in rows), 2),
+            "unlabeled_usd": round(unl["total_usd"], 2) if unl else 0.0, "unlabeled_orders": unl["orders"] if unl else 0}

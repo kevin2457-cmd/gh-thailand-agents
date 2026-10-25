@@ -63,3 +63,12 @@ def test_assign_unlabeled_orders(conn):
     assert cu.profile(conn, "CUST-002", TODAY)["orders"] == before + 1
     with pytest.raises(ValueError):
         cu.assign_sales(conn, [sale], "UNLABELED", "U01")
+
+
+def test_spend_ranking_matches_profiles(conn):
+    sp = cu.spend_ranking(conn)
+    totals = [r["total_usd"] for r in sp["rows"]]
+    assert totals == sorted(totals, reverse=True) and all(r["code"] != "UNLABELED" for r in sp["rows"])
+    top = sp["rows"][0]
+    assert round(top["total_usd"], 2) == cu.profile(conn, top["code"], TODAY)["total_usd"]
+    assert abs(sum(r["share"] for r in sp["rows"]) - 100) < 1
