@@ -24,10 +24,32 @@ TABLES = [
 ]
 
 
+# 后来加的列：已经建好的数据库（例如老板电脑上的 data/real.db）打开时自动补上，不用重建
+MIGRATIONS = [
+    ("pending_records", "payment_method", "TEXT NOT NULL DEFAULT 'unknown'"),
+    ("pending_records", "payment_file", "TEXT"),
+    ("sales", "payment_method", "TEXT NOT NULL DEFAULT 'unknown'"),
+    ("sales", "payment_file", "TEXT"),
+]
+_migrated: set[str] = set()
+
+
+def migrate(conn: sqlite3.Connection) -> None:
+    for table, col, ddl in MIGRATIONS:
+        cols = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        if cols and col not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}")
+    conn.commit()
+
+
 def connect(db_path: Path | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path or active_db())
+    path = db_path or active_db()
+    conn = sqlite3.connect(path, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    if str(path) not in _migrated and Path(path).exists():
+        migrate(conn)
+        _migrated.add(str(path))
     return conn
 
 

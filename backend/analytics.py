@@ -129,6 +129,43 @@ def customer_history(conn: sqlite3.Connection, code: str, limit: int = 10) -> di
             "recent_orders": [dict(r) for r in orders], "usual_products": top_products(conn, code, 5)}
 
 
+def period_starts(today: date) -> dict[str, date]:
+    """今年、本月、本周（周一开始）、今天的起始日期。"""
+    return {"year": date(today.year, 1, 1), "month": date(today.year, today.month, 1),
+            "week": today - timedelta(days=today.weekday()), "today": today}
+
+
+def sales_stats(conn: sqlite3.Connection, today: date) -> list[dict]:
+    """老板要的销售统计：每个时间段的订单数、件数、按原币种的收入（泰铢 / 美金 / 人民币 / USDT），
+    以及折算成美元的合计；再按付款方式分开（转账 / 现金 / 未付款 / 历史订单未记录）。
+    金额 = 数量 × 单价 × 折扣，只算已批准写入的订单。"""
+    out = []
+    for key, start in period_starts(today).items():
+        args = (start.isoformat(), today.isoformat())
+        n = conn.execute("SELECT COUNT(*) FROM sales WHERE sale_date >= ? AND sale_date <= ?", args).fetchone()[0]
+        by_cur = {r["currency"]: r["amount"] for r in conn.execute(
+            """SELECT si.currency, SUM(si.qty * si.unit_price * si.discount) AS amount
+               FROM sale_items si JOIN sales s ON s.id = si.sale_id
+               WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY si.currency""", args)}
+        units = conn.execute("""SELECT COALESCE(SUM(si.qty), 0) FROM sale_items si JOIN sales s ON s.id = si.sale_id
+                                WHERE s.sale_date >= ? AND s.sale_date <= ?""", args).fetchone()[0]
+        usd_total = conn.execute(
+            """SELECT COALESCE(SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)), 0)
+               FROM sale_items si JOIN sales s ON s.id = si.sale_id
+               WHERE s.sale_date >= ? AND s.sale_date <= ?""", args).fetchone()[0]
+        by_pay = {r["payment_method"]: {"orders": r["n"], "usd": r["usd"]} for r in conn.execute(
+            """SELECT s.payment_method, COUNT(DISTINCT s.id) AS n,
+                      SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)) AS usd
+               FROM sales s JOIN sale_items si ON si.sale_id = s.id
+               WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY s.payment_method""", args)}
+        out.append({"period": key, "from": start.isoformat(), "to": today.isoformat(), "orders": n, "units": units,
+                    "thb": round(by_cur.get("THB", 0) or 0, 2), "usd": round((by_cur.get("USD", 0) or 0)
+                                                                            + (by_cur.get("USDT", 0) or 0), 2),
+                    "cny": round(by_cur.get("CNY", 0) or 0, 2), "total_usd": round(usd_total, 2),
+                    "by_payment": by_pay})
+    return out
+
+
 def sales_summary(conn: sqlite3.Connection, today: date, days: int = 30) -> dict:
     since = (today - timedelta(days=days)).isoformat()
     rows = conn.execute(

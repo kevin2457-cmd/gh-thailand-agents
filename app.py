@@ -8,20 +8,23 @@
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
 import sys
+import uuid
 from contextlib import closing
 from datetime import date
+from pathlib import Path
 
 from dash import ALL, Dash, Input, Output, State, ctx, dcc, html, no_update
 from flask import request
 
 from backend import analytics, orders, runner
-from backend.catalog import CATALOG
+from backend.catalog import CATALOG, candidates, lookup, norm
 from backend.i18n import EXAMPLE_QUESTIONS, t, tr
-from backend.config import UNLABELED_CODE, db_path_for, env_file_found, set_active_db
+from backend.config import DATA_DIR, ROOT_DIR, UNLABELED_CODE, db_path_for, env_file_found, set_active_db
 from backend.db import connect, init_db
 
 # python app.py              -> 模拟数据（data/app.db）
@@ -43,6 +46,37 @@ def date_options(lang: str, days: int = 120) -> list[dict]:
         tag = t(lang, "today") if i == 0 else wd[d.weekday()]
         out.append({"label": f"{d.isoformat()} · {tag}", "value": d.isoformat()})
     return out
+
+
+PAYMENTS_DIR = DATA_DIR / "payments"  # 付款截图只存在本机（gitignored）
+CATALOG_TEXT = {sku: norm(" ".join([sku, name, size, brand, *aliases])) for sku, name, size, brand, aliases in CATALOG}
+
+
+def payment_options(lang: str) -> list[dict]:
+    return [{"label": t(lang, f"pay_{v}"), "value": v} for v in ("transfer", "cash", "unpaid")]
+
+
+def save_proof(contents: str | None, filename: str | None) -> str | None:
+    """把上传的付款截图存到 data/payments/，返回相对路径。只接受图片。"""
+    if not contents:
+        return None
+    header, _, data = contents.partition(",")
+    if not header.startswith("data:image/"):
+        raise ValueError("proof_bad")
+    PAYMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    ext = (Path(filename or "").suffix or ".jpg").lower()[:6]
+    path = PAYMENTS_DIR / f"{uuid.uuid4().hex[:12]}{ext}"
+    path.write_bytes(base64.b64decode(data))
+    return str(path.relative_to(ROOT_DIR)).replace("\\", "/")
+
+
+def proof_img(rel: str | None, height: int = 160):
+    if not rel or not (ROOT_DIR / rel).exists():
+        return None
+    data = base64.b64encode((ROOT_DIR / rel).read_bytes()).decode()
+    mime = "image/png" if rel.lower().endswith(".png") else "image/jpeg"
+    return html.A(html.Img(src=f"data:{mime};base64,{data}", className="proof-thumb", style={"maxHeight": f"{height}px"}),
+                  href=f"data:{mime};base64,{data}", target="_blank")
 
 
 def source_options(lang: str) -> list[dict]:
@@ -160,6 +194,13 @@ def intake_tab(lang: str) -> html.Div:
                 ]),
             ]),
             html.Div(className="field", children=[
+                html.Label(t(lang, "pay_l")),
+                dcc.RadioItems(id="intake-pay", value="transfer", inline=True, options=payment_options(lang)),
+                dcc.Upload(id="intake-proof", accept="image/*", max_size=8_000_000, multiple=False, className="upload",
+                           children=html.Div(t(lang, "upload_hint"))),
+                html.Div(id="intake-proof-preview"),
+            ]),
+            html.Div(className="field", children=[
                 html.Label(t(lang, "text_l")),
                 dcc.Textarea(id="intake-text", placeholder=t(lang, "text_ph")),
             ]),
@@ -173,7 +214,7 @@ def intake_tab(lang: str) -> html.Div:
         ]),
         html.Div(className="panel", children=[
             html.H2(t(lang, "result_h")),
-            dcc.Loading(type="dot", color="#2e7d32", children=html.Div(
+            dcc.Loading(type="dot", color="#d4af37", children=html.Div(
                 id="intake-result", children=html.Div(t(lang, "result_empty"), className="muted"))),
         ]),
     ])
@@ -185,7 +226,8 @@ def serve_layout() -> html.Div:
     page = request.referrer or ""
     lang = "zh" if request.args.get("lang") == "zh" or "lang=zh" in page else "en"
     # ?tab=intake 直接打开某个标签页；?role=staff 直接用员工身份（方便员工试用）
-    start_tab = next((v for v in ("intake", "approvals", "inventory", "customers", "usage") if f"tab={v}" in page), "ask")
+    start_tab = next((v for v in ("sales", "intake", "approvals", "inventory", "customers", "usage")
+                      if f"tab={v}" in page), "ask")
     start_role = "U02" if "role=staff" in page else "U01"
 
     def tab(key: str, value: str, body) -> dcc.Tab:
@@ -200,15 +242,19 @@ def serve_layout() -> html.Div:
         header(lang, start_role),
         dcc.Tabs(id="tabs", value=start_tab, className="tabs", children=[
             tab("tab_ask", "ask", html.Div(chat_tab(lang), className="tab-body")),
+            tab("tab_sales", "sales", html.Div(id="sales-body", className="tab-body")),
             tab("tab_intake", "intake", html.Div(intake_tab(lang), className="tab-body")),
             tab("tab_approvals", "approvals", html.Div(className="tab-body", children=[
                 html.Div(id="approval-flash"), html.Div(id="approvals-body")])),
-            tab("tab_inventory", "inventory", html.Div(id="inventory-body", className="tab-body")),
+            tab("tab_inventory", "inventory", html.Div(className="tab-body", children=[
+                dcc.Input(id="inv-search", type="text", placeholder=t(lang, "inv_search_ph"), debounce=False,
+                          className="text-input search-box"),
+                html.Div(id="inventory-body")])),
             tab("tab_customers", "customers", html.Div(className="tab-body", children=[
                 html.Div(id="customers-body"),
                 html.Div(className="panel", children=[
                     html.H2(t(lang, "followup_h")),
-                    dcc.Loading(type="dot", color="#2e7d32", children=html.Div(
+                    dcc.Loading(type="dot", color="#d4af37", children=html.Div(
                         id="followup-out", children=html.Div(t(lang, "followup_hint"), className="muted"))),
                 ])])),
             tab("tab_usage", "usage", html.Div(id="usage-body", className="tab-body")),
@@ -308,6 +354,15 @@ def customer_options(_r, current, lang):
     return opts, current or (opts[0]["value"] if opts else None)
 
 
+@app.callback(Output("intake-proof-preview", "children"), Input("intake-proof", "contents"),
+              State("intake-proof", "filename"), prevent_initial_call=True)
+def preview_proof(contents, filename):
+    if not contents:
+        return None
+    return html.Div(className="row", children=[html.Img(src=contents, className="proof-thumb"),
+                                               html.Span(filename or "", className="muted")])
+
+
 @app.callback(Output("intake-text", "value"), Output("intake-date", "value"), Input("ex-normal", "n_clicks"),
               Input("ex-math", "n_clicks"), Input("ex-attack", "n_clicks"), prevent_initial_call=True)
 def fill_example(*_):
@@ -341,20 +396,22 @@ def render_check(r: dict, m: dict[str, str], lang: str) -> list:
 
 
 @app.callback(Output("intake-result", "children"), Output("refresh", "data", allow_duplicate=True),
+              Output("intake-proof", "contents"),
               Input("intake-submit", "n_clicks"),
               State("intake-text", "value"), State("intake-customer", "value"), State("intake-new-customer", "value"),
               State("intake-source", "value"), State("intake-date", "value"), State("role", "value"),
-              State("refresh", "data"), State("lang", "data"), prevent_initial_call=True)
-def submit_order(_n, text, customer, new_customer, source, order_date, role, refresh, lang):
+              State("refresh", "data"), State("lang", "data"), State("intake-pay", "value"),
+              State("intake-proof", "contents"), State("intake-proof", "filename"), prevent_initial_call=True)
+def submit_order(_n, text, customer, new_customer, source, order_date, role, refresh, lang, pay, proof, proof_name):
     if not (text or "").strip():
-        return html.Div(t(lang, "need_text"), className="flash bad"), no_update
+        return html.Div(t(lang, "need_text"), className="flash bad"), no_update, no_update
     order_date = (order_date or "").strip()
     if order_date:
         try:
             if date.fromisoformat(order_date) > today():
-                return html.Div(t(lang, "date_future"), className="flash bad"), no_update
+                return html.Div(t(lang, "date_future"), className="flash bad"), no_update, no_update
         except ValueError:
-            return html.Div(t(lang, "date_format"), className="flash bad"), no_update
+            return html.Div(t(lang, "date_format"), className="flash bad"), no_update, no_update
     from backend.agents import intake
     try:
         with db() as conn:
@@ -362,13 +419,19 @@ def submit_order(_n, text, customer, new_customer, source, order_date, role, ref
                 customer = orders.ensure_customer(conn, new_customer.strip(), created=today().isoformat())
             m = names_map(conn, lang)
         if not customer:
-            return html.Div(t(lang, "need_customer"), className="flash bad"), no_update
+            return html.Div(t(lang, "need_customer"), className="flash bad"), no_update, no_update
+        try:
+            proof_file = save_proof(proof, proof_name)
+        except ValueError:
+            return html.Div(t(lang, "proof_bad"), className="flash bad"), no_update, no_update
         r = runner.run(intake(text, customer_code=customer, submitted_by=role, source_type=source, today=today(),
-                              order_date=order_date or None,
+                              order_date=order_date or None, payment_method=pay or "unknown", payment_file=proof_file,
                               hint="Write the `questions` in English." if lang == "en" else "请用中文写 `questions`。"))
     except Exception as e:
-        return html.Div(f"{t(lang, 'error')}: {type(e).__name__}: {e}", className="flash bad"), no_update
-    return render_check(r, m, lang), (refresh or 0) + 1
+        return html.Div(f"{t(lang, 'error')}: {type(e).__name__}: {e}", className="flash bad"), no_update, no_update
+    pay_line = html.Div([html.B(f"{t(lang, 'pay_l')}: "), t(lang, f"pay_{pay}"), " · ",
+                         t(lang, "proof_attached" if proof_file else "proof_none")], className="muted")
+    return [pay_line, *render_check(r, m, lang)], (refresh or 0) + 1, None  # 清空上传框，下一单不会沿用截图
 
 
 # ---------------------------------------------------------------- 审批队列
@@ -396,12 +459,23 @@ def pending_card(row, m: dict[str, str], is_owner: bool, lang: str) -> html.Div:
                               html.Td(price), html.Td(f"{l['discount']:g}"), html.Td(fix)]))
     who = t(lang, USERS.get(row["submitted_by"], "staff"))
     soft = [w for w in warns if w not in blocking]
+    pay = row["payment_method"] or "unknown"
+    cash_waiting = orders.CASH_BLOCK in blocking
+    pay_row = html.Div(className="row", style={"margin": "8px 0"}, children=[
+        html.B(f"{t(lang, 'pay_l')}:"),
+        html.Span(t(lang, f"pay_{pay}"), className="pill " + {"transfer": "ok", "cash": "warn", "unpaid": "bad"}.get(pay, "")),
+        html.Span(t(lang, "proof_attached" if row["payment_file"] else "proof_none"), className="muted"),
+        html.Button(t(lang, "cash_ok_btn"), id={"type": "cash-ok", "pid": row["id"]}, className="btn small", n_clicks=0)
+        if cash_waiting and is_owner else None,
+    ])
     return html.Div(className="card", children=[
         html.Div(className="card-head", children=[
             html.B(f"#{row['id']} · {m.get(p['customer'], p['customer'])} · {p['order_date']}"),
             html.Span(t(lang, "submitted_by", who=who, src=t(lang, f"src_{row['source_type']}"),
                         ts=row["submitted_at"][:16].replace("T", " ")), className="muted")]),
         html.Table(lines, className="simple"),
+        pay_row,
+        proof_img(row["payment_file"]),
         html.Div(className="alert-box bad", children=[html.B(t(lang, "must_fix")), html.Ul([html.Li(tr(b, lang)) for b in blocking])])
         if blocking else None,
         html.Div(className="alert-box warn", children=[html.B(t(lang, "note_h")), html.Ul([html.Li(tr(w, lang)) for w in soft])])
@@ -454,10 +528,11 @@ def render_approvals(_r, role, _t, lang):
 @app.callback(Output("approval-flash", "children"), Output("refresh", "data", allow_duplicate=True),
               Input({"type": "approve", "pid": ALL}, "n_clicks"), Input({"type": "reject", "pid": ALL}, "n_clicks"),
               Input({"type": "sku-set", "pid": ALL, "line": ALL}, "n_clicks"), Input("approve-clean", "n_clicks"),
+              Input({"type": "cash-ok", "pid": ALL}, "n_clicks"),
               State({"type": "sku-pick", "pid": ALL, "line": ALL}, "value"),
               State({"type": "sku-pick", "pid": ALL, "line": ALL}, "id"),
               State("role", "value"), State("refresh", "data"), State("lang", "data"), prevent_initial_call=True)
-def act_on_pending(_a, _r, _s, _clean, picks, pick_ids, role, refresh, lang):
+def act_on_pending(_a, _r, _s, _clean, _cash, picks, pick_ids, role, refresh, lang):
     trig = ctx.triggered_id
     if not trig or not ctx.triggered or not ctx.triggered[0]["value"]:
         return no_update, no_update
@@ -472,6 +547,9 @@ def act_on_pending(_a, _r, _s, _clean, picks, pick_ids, role, refresh, lang):
             elif trig["type"] == "approve":
                 sale_id = orders.approve(conn, trig["pid"], role)
                 msg = t(lang, "msg_approved", pid=trig["pid"], sale=sale_id)
+            elif trig["type"] == "cash-ok":
+                orders.confirm_cash(conn, trig["pid"], role)
+                msg = t(lang, "msg_cash_ok", pid=trig["pid"])
             elif trig["type"] == "reject":
                 orders.reject(conn, trig["pid"], role, "老板在审批队列拒绝")
                 msg = t(lang, "msg_rejected", pid=trig["pid"])
@@ -486,15 +564,68 @@ def act_on_pending(_a, _r, _s, _clean, picks, pick_ids, role, refresh, lang):
         return html.Div(tr(str(e), lang), className="flash bad"), (refresh or 0) + 1
 
 
+# ---------------------------------------------------------------- 销售统计
+
+THB_PER_USD = 33.1
+
+
+def money(v: float, cur: str) -> str:
+    return f"฿{v:,.0f}" if cur == "THB" else (f"¥{v:,.0f}" if cur == "CNY" else f"${v:,.0f}")
+
+
+@app.callback(Output("sales-body", "children"), Input("refresh", "data"), Input("tabs", "value"), State("lang", "data"))
+def render_sales(_r, tab, lang):
+    if tab != "sales":
+        return no_update
+    with db() as conn:
+        stats = analytics.sales_stats(conn, today())
+    cards = []
+    for p in stats:
+        cards.append(html.Div(className="stat-card", children=[
+            html.Div(className="stat-head", children=[html.B(t(lang, f"p_{p['period']}")),
+                                                      html.Span(f"{p['from']} → {p['to']}", className="muted")]),
+            html.Div(f"{p['orders']} {t(lang, 's_orders')} · {p['units']:,} {t(lang, 's_units')}", className="muted"),
+            html.Div(className="stat-row", children=[html.Span(t(lang, "s_thb")), html.B(money(p["thb"], "THB"))]),
+            html.Div(className="stat-row", children=[html.Span(t(lang, "s_usd")), html.B(money(p["usd"], "USD"))]),
+            html.Div(className="stat-row", children=[html.Span(t(lang, "s_cny")), html.B(money(p["cny"], "CNY"))])
+            if p["cny"] else None,
+            html.Div(className="stat-total", children=[
+                html.Span(t(lang, "s_total")),
+                html.B(f"{money(p['total_usd'], 'USD')}  (≈ {money(p['total_usd'] * THB_PER_USD, 'THB')})")]),
+        ]))
+    head = html.Tr([html.Th(t(lang, "s_period"))] + [html.Th(t(lang, f"pay_{k}")) for k in ("transfer", "cash", "unpaid", "unknown")])
+    rows = [html.Tr([html.Td(t(lang, f"p_{p['period']}"))] + [
+        html.Td(f"{p['by_payment'].get(k, {}).get('orders', 0)} · "
+                f"{money(p['by_payment'].get(k, {}).get('usd', 0) or 0, 'USD')}")
+        for k in ("transfer", "cash", "unpaid", "unknown")]) for p in stats]
+    return [
+        html.Div(className="panel", children=[html.H2(t(lang, "sales_h")),
+                                              html.Div(t(lang, "sales_note"), className="muted", style={"marginBottom": "12px"}),
+                                              html.Div(className="stat-grid", children=cards)]),
+        html.Div(className="panel", children=[html.H2(t(lang, "s_by_pay")), html.Table([head, *rows], className="simple")]),
+    ]
+
+
 # ---------------------------------------------------------------- 库存与补货
 
+def match_products(q: str) -> set[str] | None:
+    """库存搜索：名字、SKU、品牌、中文俗称都能搜；"香味"这种有歧义的名字返回所有候选。"""
+    q = (q or "").strip()
+    if not q:
+        return None
+    hits = {sku for sku, text in CATALOG_TEXT.items() if norm(q) in text}
+    sku = lookup(q)
+    return hits | ({sku} if sku else set()) | set(candidates(q))
+
+
 @app.callback(Output("inventory-body", "children"), Input("refresh", "data"), Input("tabs", "value"),
-              State("lang", "data"))
-def render_inventory(_r, tab, lang):
+              Input("inv-search", "value"), State("lang", "data"))
+def render_inventory(_r, tab, query, lang):
     if tab != "inventory":
         return no_update
     with db() as conn:
         rows = analytics.reorder_report(conn, today())
+    wanted = match_products(query)
     sold = [r for r in rows if r["status"] != "no_recent_sales"]
     urgent = [r for r in rows if r["status"] in ("out_of_stock", "order_now")]
     kpis = html.Div(className="kpis", children=[
@@ -516,11 +647,15 @@ def render_inventory(_r, tab, lang):
         html.Td(r["daily_rate"] or ""), html.Td(r["safety_used"] or ""),
         html.Td("" if r["days_of_cover"] is None else r["days_of_cover"]), html.Td(r["order_by"] or ""),
         html.Td(html.Span(t(lang, "stockout_flag"), className="pill bad") if r["stockout_before_arrival"] else ""),
-    ]) for r in rows]
+    ]) for r in rows if wanted is None or r["sku"] in wanted]
+    found = None
+    if wanted is not None:
+        found = html.Div(t(lang, "inv_matches", n=len(body), q=query.strip()) if body else
+                         t(lang, "inv_no_match", q=query.strip()), className="flash " + ("ok" if body else "bad"))
     return html.Div(className="panel", children=[
         html.H2(t(lang, "inv_h")),
         html.Div(t(lang, "inv_formula"), className="muted", style={"marginBottom": "12px"}),
-        kpis, html.Table([head, *body], className="simple")])
+        kpis, found, html.Table([head, *body], className="simple")])
 
 
 # ---------------------------------------------------------------- 客户

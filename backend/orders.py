@@ -250,21 +250,43 @@ def user_role(conn: sqlite3.Connection, user_id: str) -> str:
     return row["role"]
 
 
+PAYMENT_METHODS = ("transfer", "cash", "unpaid", "unknown")
+CASH_BLOCK = "现金付款：老板确认已收到现金后才能批准"
+
+
+def payment_checks(payment_method: str, payment_file: str | None) -> tuple[list[str], list[str]]:
+    """老板的规则：转账要有截图；现金必须老板确认收到；未付款提醒。返回 (warnings, blocking)。"""
+    if payment_method == "cash":
+        return [], [CASH_BLOCK]
+    if payment_method == "transfer" and not payment_file:
+        return ["转账但没有上传付款截图"], []
+    if payment_method == "unpaid":
+        return ["客户还没有付款（未付款 / 赊账）"], []
+    return [], []
+
+
 def submit(conn: sqlite3.Connection, *, customer_code: str, checked: dict, source_type: str,
-           source_text: str, submitted_by: str, run_id: str | None = None) -> int:
+           source_text: str, submitted_by: str, run_id: str | None = None,
+           payment_method: str = "unknown", payment_file: str | None = None) -> int:
     """员工或老板提交一张待审批的销售单。只写 pending_records 和 audit_log。"""
     role = user_role(conn, submitted_by)
+    if payment_method not in PAYMENT_METHODS:
+        raise ValueError(f"未知付款方式 {payment_method}")
+    pw, pb = payment_checks(payment_method, payment_file)
+    checked = {**checked, "warnings": checked["warnings"] + pw, "blocking": checked["blocking"] + pb}
     payload = {"customer": customer_code, "order_date": checked["order_date"], "lines": checked["lines"],
                "blocking": checked["blocking"], "run_id": run_id}
     cur = conn.execute(
-        "INSERT INTO pending_records (kind, payload_json, source_type, source_text, warnings, submitted_by, submitted_at) "
-        "VALUES ('sale', ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO pending_records (kind, payload_json, source_type, source_text, warnings, submitted_by, submitted_at, "
+        "payment_method, payment_file) VALUES ('sale', ?, ?, ?, ?, ?, ?, ?, ?)",
         (json.dumps(payload, ensure_ascii=False), source_type, source_text,
-         json.dumps(checked["warnings"] + checked["blocking"], ensure_ascii=False), submitted_by, _now()))
+         json.dumps(checked["warnings"] + checked["blocking"], ensure_ascii=False), submitted_by, _now(),
+         payment_method, payment_file))
     pid = cur.lastrowid
     audit(conn, submitted_by, role, "submit", "pending_records", str(pid),
           {"customer": customer_code, "lines": len(checked["lines"]), "blocking": len(checked["blocking"]),
-           "warnings": len(checked["warnings"]), "run_id": run_id})
+           "warnings": len(checked["warnings"]), "run_id": run_id, "payment": payment_method,
+           "proof": bool(payment_file)})
     conn.commit()
     return pid
 
@@ -297,6 +319,21 @@ def update_pending_line(conn: sqlite3.Connection, pending_id: int, line_index: i
     conn.commit()
 
 
+def confirm_cash(conn: sqlite3.Connection, pending_id: int, user_id: str) -> None:
+    """老板确认已收到现金：去掉"现金付款"这条必须处理的问题，记审计日志。"""
+    if user_role(conn, user_id) != "owner":
+        raise PermissionError("只有老板可以确认收到现金")
+    row = conn.execute("SELECT payload_json, status FROM pending_records WHERE id = ?", (pending_id,)).fetchone()
+    if row is None or row["status"] != "pending":
+        raise ValueError("这条记录不在待审批状态")
+    payload = json.loads(row["payload_json"])
+    payload["blocking"] = [b for b in payload["blocking"] if b != CASH_BLOCK]
+    conn.execute("UPDATE pending_records SET payload_json = ? WHERE id = ?",
+                 (json.dumps(payload, ensure_ascii=False), pending_id))
+    audit(conn, user_id, "owner", "cash_confirmed", "pending_records", str(pending_id), {})
+    conn.commit()
+
+
 def approve(conn: sqlite3.Connection, pending_id: int, user_id: str, note: str = "") -> str:
     """老板批准：写 sales、sale_items、stock_moves（盘点日之后的才扣库存）。返回销售单号。"""
     role = user_role(conn, user_id)
@@ -318,8 +355,10 @@ def approve(conn: sqlite3.Connection, pending_id: int, user_id: str, note: str =
         raise ValueError(f"客户 {p['customer']} 不存在")
     sale_id = _next_sale_id(conn)
     try:
-        conn.execute("INSERT INTO sales (id, sale_date, customer_id, source, note) VALUES (?, ?, ?, ?, ?)",
-                     (sale_id, p["order_date"], cust["id"], row["source_type"], note))
+        conn.execute("INSERT INTO sales (id, sale_date, customer_id, source, note, payment_method, payment_file) "
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                     (sale_id, p["order_date"], cust["id"], row["source_type"], note,
+                      row["payment_method"] or "unknown", row["payment_file"]))
         merged: dict[str, dict] = {}
         for l in p["lines"]:
             if l["sku"] in merged:  # 同一单里同一个 SKU 出现两次：合并数量

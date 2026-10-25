@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GH Thailand Inventory + CRM Agents — Final Report</title>
 <style>
-  :root { --ink:#1b2a1e; --muted:#5e6f61; --line:#e2d8c3; --pink:#2e7d32; --pink-soft:#e8f5e9; --dark:#ffffff; }
+  :root { --ink:#1a1712; --muted:#6b6150; --line:#e4d9bd; --pink:#9c7c1c; --pink-soft:#f6eccb; --dark:#0c0b09; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: "Inter","Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink);
-         line-height:1.6; font-size:15.5px; background:#f3ecdc; }
-  .page { max-width: 900px; margin: 24px auto; padding: 48px 40px 80px; background:#fff; border: 1px solid #e2d8c3;
-          border-radius: 14px; box-shadow: 0 4px 18px rgba(90, 70, 30, 0.08); }
+         line-height:1.6; font-size:15.5px; background:#0c0b09; }
+  .page { max-width: 900px; margin: 24px auto; padding: 48px 40px 80px; background:#fffdf7; border: 1px solid #d4af37;
+          border-radius: 14px; box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6); }
   h1 { font-size: 30px; margin: 0 0 6px; line-height:1.2; }
   h2 { font-size: 21px; margin: 44px 0 10px; padding-top: 10px; border-top: 3px solid var(--pink); }
   h3 { font-size: 16.5px; margin: 24px 0 6px; }
@@ -20,7 +20,7 @@
   .links a { color: var(--pink); }
   table { width:100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
   th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
-  th { background: #f6f0e2; font-weight: 600; }
+  th { background: #f6eccb; font-weight: 600; }
   td.n, th.n { text-align: right; white-space: nowrap; }
   .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
   .kpi { border:1px solid var(--line); border-radius: 12px; padding: 10px 12px; background:#fff; }
@@ -32,7 +32,7 @@
   .note { background: var(--pink-soft); border-left: 4px solid var(--pink); padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 14.5px; }
   .quote { font-size: 17px; border-left: 4px solid var(--pink); padding: 6px 14px; margin: 14px 0; }
   .muted { color: var(--muted); font-size: 13.5px; }
-  code { background:#eef6ec; padding: 1px 5px; border-radius: 4px; font-size: 13.5px; }
+  code { background:#f6eccb; padding: 1px 5px; border-radius: 4px; font-size: 13.5px; }
   ol.steps li { margin: 6px 0; }
   .pill { display:inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
   .ok { background:#e2f7ee; color:#11734d; } .bad { background:#fde3e8; color:#a3123a; }
@@ -124,8 +124,8 @@ where it found real money errors.</p>
   <tr><td><b>Inventory</b></td><td>Stock, sales, what to reorder and by when</td><td><code>get_reorder_report</code>, <code>get_stock</code>, <code>get_sales_summary</code></td></tr>
   <tr><td><b>CRM</b></td><td>Dormant customers, customer history, follow-up WeChat messages</td><td><code>get_dormant_customers</code>, <code>get_customer_history</code></td></tr>
 </table>
-<p><b>Interface.</b> One Dash page with six tabs (Ask, Order entry, Approvals, Inventory &amp; reorder, Customers,
-Usage &amp; audit) and an owner/staff role switch. The UI is in <b>English by default</b> and in Chinese with one click
+<p><b>Interface.</b> One Dash page with seven tabs (Ask, Sales, Order entry, Approvals, Inventory &amp; reorder, Customers,
+Usage &amp; audit), a black-and-gold theme and an owner/staff role switch. The UI is in <b>English by default</b> and in Chinese with one click
 (<code>?lang=zh</code>) for the owner and staff; validation messages are translated too. Order entry has three
 built-in examples (normal, arithmetic error, injection attack) so a newcomer can see every path in a minute.</p>
 <p><b>Code, not agents, does everything that must be right:</b> redaction before the model; re-checking every SKU
@@ -189,7 +189,7 @@ dollars of lost sales a year.</p>
 <table>
   <tr><th>Risk</th><th>Defense built</th></tr>
   <tr><td>Prompt injection in a chat message or note</td><td>Order text wrapped as data; the intake agent has no write tools; it must copy any instruction-like sentence to <code>suspicious_instructions</code>; a code regex (English + Chinese) also checks; any hit is a blocking issue. The provider's content filter is a fourth layer.</td></tr>
-  <tr><td>Data leaks (customer names, phones, addresses)</td><td>Redaction before every model call; agents only ever see customer codes; real data, <code>.env</code> and the real database are gitignored; private examples were scrubbed from the git history.</td></tr>
+  <tr><td>Data leaks (customer names, phones, addresses)</td><td>Redaction before every model call; agents only ever see customer codes; payment screenshots are never sent to the model and stay in a local folder; real data, <code>.env</code> and the real database are gitignored; private examples were scrubbed from the git history.</td></tr>
   <tr><td>Invented facts / wrong SKU</td><td>Every number in answers comes from a tool; every SKU is re-checked against the catalog; unknown names and missing sizes block approval until the owner picks.</td></tr>
   <tr><td>Wrong actions (bad quantity, price, stock)</td><td>Line and total arithmetic, floor price, quantity &gt; 500, quantity &gt; stock → warning or block; owner-only approval; audit log.</td></tr>
   <tr><td>Infinite loops / overspending</td><td>Request and tool-call limits on every agent run.</td></tr>
@@ -255,7 +255,12 @@ approving or rejecting all 4 within 10 seconds.</p>
   <tr><td>Owner</td><td>Order entry had no date field, so an undated chat order was recorded as "today"</td><td>Order-date field; if the text has its own date and they differ, the text wins and the owner is warned</td></tr>
   <tr><td>Staff</td><td>"Risk of entering the same order twice" — the audit log confirms it: the 4 submissions were 2 orders each entered twice, and one of them has exactly the same products and quantities as an order already imported from the June report (being checked with the owner)</td><td>Duplicate check against sales and pending orders: same customer, same products and quantities within 3 days blocks approval; same products for another customer or date shows a warning</td></tr>
   <tr><td>Staff</td><td>"The date should be a dropdown"</td><td>Date dropdown of the last 120 days, searchable (type 09-29)</td></tr>
+  <tr><td>Owner</td><td>Wanted proof of payment with each order, and control over cash</td><td>Payment method on every order; a bank-transfer screenshot can be attached and is shown on the approval card; a <b>cash</b> order cannot be approved until the owner clicks "Confirm cash received" (audit-logged)</td></tr>
+  <tr><td>Owner</td><td>Wanted to look up one product's stock quickly</td><td>Search box on the inventory page (name, SKU, brand or Chinese nickname such as 紫粉)</td></tr>
+  <tr><td>Owner</td><td>"I want to know how much money there is": sales by year, month, week and day, in THB and USD</td><td>Sales tab (deterministic SQL): orders, units, revenue in each currency and a USD total per period, split by payment method so unpaid and unrecorded orders are visible</td></tr>
 </table>
+<figure><img src="{{IMG_09}}" alt="Payment proof on an approval card"><figcaption>Figure 9 — Approval card with a bank-transfer screenshot (sample image); cash orders show a "Confirm cash received" button and cannot be approved before it.</figcaption></figure>
+<figure><img src="{{IMG_10}}" alt="Real sales statistics"><figcaption>Figure 10 — Sales tab on the real database: this year (records start in June), this month, this week and today, in Thai Baht and US dollars, with a USD total.</figcaption></figure>
 <p class="muted">The owner is the primary real user (and the author). The app ran on the owner's computer with the real database
 (<code>python app.py --data real</code>); real customer names never left that computer.</p>
 

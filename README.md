@@ -22,6 +22,7 @@ Staff paste orders straight from WeChat, Excel or the owner's sales notes. An in
    ```
    Open http://127.0.0.1:8050. The interface is in English by default; for Chinese, click 中文 in the header or open http://127.0.0.1:8050/?lang=zh.
 4. **Try it.**
+   - **Sales:** orders and revenue for this year, month, week and today, in Thai Baht and US dollars, split by payment method.
    - **问答 (Q&A):** click an example question, for example 哪些产品需要马上补货？ The answer shows the tools used and the token cost.
    - **录单 (order entry):** switch the role (top right) to 员工 (staff) and click one of the three examples: a normal order, an order with an arithmetic error, or an order containing a prompt-injection attack. Then click 解析并提交审批.
    - **审批队列 (approvals):** switch to 老板 (owner) to approve or reject. Blocking issues disable the approve button, and staff can never approve.
@@ -72,6 +73,7 @@ Every product spelling and Chinese nickname maps to one standard SKU in `backend
 - Customer names, phone numbers and addresses stay in the local database. Agents see only codes like `CUST-017`, and names are swapped back in only on the owner's screen.
 - Order text is redacted before it reaches the model (phones, addresses, links, bank accounts).
 - No agent has a write tool. Only `orders.approve()` writes, and only for the owner role. Every step goes into `audit_log`.
+- Payment screenshots attached to orders are saved in `data/payments/` (gitignored) and are never sent to the model. A cash order needs the owner's "Confirm cash received" before it can be approved.
 - Real data, `data/*.db` and `.env` are gitignored.
 
 ## Layout

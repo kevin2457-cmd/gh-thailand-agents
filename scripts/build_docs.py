@@ -27,7 +27,7 @@ def img(name: str) -> str:
 def leaf(opacity: float = 1.0) -> str:
     svg = (ROOT_DIR / "assets" / "leaf.svg").read_text(encoding="utf-8")
     if opacity < 1:
-        svg = svg.replace('<g fill="#2e7d32"', f'<g fill="#2e7d32" fill-opacity="{opacity}"')
+        svg = svg.replace('<g fill="#d4af37"', f'<g fill="#d4af37" fill-opacity="{opacity}"')
     return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
 
 
@@ -37,52 +37,52 @@ def load(name: str) -> dict | list:
 
 DIAGRAM = """<svg class="diagram" viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, PingFang SC, sans-serif">
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-    <path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
-  <rect width="900" height="430" fill="#ffffff" stroke="#e2d8c3"/>
-  <text x="20" y="30" fill="#5e6f61" font-size="13">ORDER ENTRY (staff)</text>
-  <g font-size="13" fill="#1b2a1e">
-    <rect x="20" y="45" width="130" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>
+    <path d="M0,0 L10,5 L0,10 z" fill="#d4af37"/></marker></defs>
+  <rect width="900" height="430" fill="#0c0b09" stroke="#9c7c1c"/>
+  <text x="20" y="30" fill="#b3a787" font-size="13">ORDER ENTRY (staff)</text>
+  <g font-size="13" fill="#f1e8d0">
+    <rect x="20" y="45" width="130" height="58" rx="10" fill="#1e1b14" stroke="#3a3122"/>
     <text x="85" y="70" text-anchor="middle">WeChat / Excel /</text><text x="85" y="88" text-anchor="middle">sales report text</text>
-    <rect x="180" y="45" width="110" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>
-    <text x="235" y="70" text-anchor="middle">Redaction</text><text x="235" y="88" text-anchor="middle" fill="#5e6f61" font-size="11">names→codes</text>
-    <rect x="320" y="45" width="150" height="58" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
-    <text x="395" y="68" text-anchor="middle" font-weight="700">Intake agent</text><text x="395" y="88" text-anchor="middle" fill="#2e7d32" font-size="11">tool: lookup_product</text>
-    <rect x="500" y="45" width="130" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>
-    <text x="565" y="68" text-anchor="middle">Code validation</text><text x="565" y="88" text-anchor="middle" fill="#5e6f61" font-size="11">SKU · math · stock · injection</text>
-    <rect x="660" y="45" width="100" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>
+    <rect x="180" y="45" width="110" height="58" rx="10" fill="#1e1b14" stroke="#3a3122"/>
+    <text x="235" y="70" text-anchor="middle">Redaction</text><text x="235" y="88" text-anchor="middle" fill="#b3a787" font-size="11">names→codes</text>
+    <rect x="320" y="45" width="150" height="58" rx="10" fill="#2a220f" stroke="#d4af37" stroke-width="2"/>
+    <text x="395" y="68" text-anchor="middle" font-weight="700">Intake agent</text><text x="395" y="88" text-anchor="middle" fill="#d4af37" font-size="11">tool: lookup_product</text>
+    <rect x="500" y="45" width="130" height="58" rx="10" fill="#1e1b14" stroke="#3a3122"/>
+    <text x="565" y="68" text-anchor="middle">Code validation</text><text x="565" y="88" text-anchor="middle" fill="#b3a787" font-size="11">SKU · math · stock · injection</text>
+    <rect x="660" y="45" width="100" height="58" rx="10" fill="#1e1b14" stroke="#3a3122"/>
     <text x="710" y="70" text-anchor="middle">Pending</text><text x="710" y="88" text-anchor="middle">queue</text>
-    <rect x="785" y="45" width="100" height="58" rx="10" fill="#fff8e1" stroke="#b26a00" stroke-width="2"/>
-    <text x="835" y="68" text-anchor="middle" font-weight="700">Owner</text><text x="835" y="88" text-anchor="middle" fill="#b26a00" font-size="11">approves</text>
+    <rect x="785" y="45" width="100" height="58" rx="10" fill="#2b2412" stroke="#f3d46b" stroke-width="2"/>
+    <text x="835" y="68" text-anchor="middle" font-weight="700">Owner</text><text x="835" y="88" text-anchor="middle" fill="#f3d46b" font-size="11">approves</text>
   </g>
-  <g stroke="#2e7d32" stroke-width="2" marker-end="url(#a)">
+  <g stroke="#d4af37" stroke-width="2" marker-end="url(#a)">
     <line x1="150" y1="74" x2="178" y2="74"/><line x1="290" y1="74" x2="318" y2="74"/><line x1="470" y1="74" x2="498" y2="74"/>
     <line x1="630" y1="74" x2="658" y2="74"/><line x1="760" y1="74" x2="783" y2="74"/>
     <line x1="835" y1="103" x2="835" y2="170"/>
   </g>
-  <rect x="610" y="172" width="275" height="90" rx="12" fill="#f7fbf6" stroke="#2e7d32"/>
-  <text x="747" y="198" text-anchor="middle" fill="#1b2a1e" font-size="14" font-weight="700">SQLite (only code writes)</text>
-  <text x="747" y="220" text-anchor="middle" fill="#5e6f61" font-size="12">products · purchases · sales · stock_moves</text>
-  <text x="747" y="240" text-anchor="middle" fill="#5e6f61" font-size="12">pending_records · audit_log · llm_usage</text>
-  <text x="20" y="200" fill="#5e6f61" font-size="13">OWNER Q&amp;A</text>
-  <g font-size="13" fill="#1b2a1e">
-    <rect x="20" y="215" width="120" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>
-    <text x="80" y="240" text-anchor="middle">Owner question</text><text x="80" y="258" text-anchor="middle" fill="#5e6f61" font-size="11">any language</text>
-    <rect x="170" y="215" width="150" height="58" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
-    <text x="245" y="240" text-anchor="middle" font-weight="700">Orchestrator</text><text x="245" y="258" text-anchor="middle" fill="#2e7d32" font-size="11">agents as tools</text>
-    <rect x="360" y="180" width="200" height="58" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
-    <text x="460" y="203" text-anchor="middle" font-weight="700">Inventory agent</text><text x="460" y="222" text-anchor="middle" fill="#2e7d32" font-size="11">reorder · stock · sales</text>
-    <rect x="360" y="255" width="200" height="58" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
-    <text x="460" y="278" text-anchor="middle" font-weight="700">CRM agent</text><text x="460" y="297" text-anchor="middle" fill="#2e7d32" font-size="11">dormant · history · message</text>
+  <rect x="610" y="172" width="275" height="90" rx="12" fill="#1e1b14" stroke="#d4af37"/>
+  <text x="747" y="198" text-anchor="middle" fill="#f1e8d0" font-size="14" font-weight="700">SQLite (only code writes)</text>
+  <text x="747" y="220" text-anchor="middle" fill="#b3a787" font-size="12">products · purchases · sales · stock_moves</text>
+  <text x="747" y="240" text-anchor="middle" fill="#b3a787" font-size="12">pending_records · audit_log · llm_usage</text>
+  <text x="20" y="200" fill="#b3a787" font-size="13">OWNER Q&amp;A</text>
+  <g font-size="13" fill="#f1e8d0">
+    <rect x="20" y="215" width="120" height="58" rx="10" fill="#1e1b14" stroke="#3a3122"/>
+    <text x="80" y="240" text-anchor="middle">Owner question</text><text x="80" y="258" text-anchor="middle" fill="#b3a787" font-size="11">any language</text>
+    <rect x="170" y="215" width="150" height="58" rx="10" fill="#2a220f" stroke="#d4af37" stroke-width="2"/>
+    <text x="245" y="240" text-anchor="middle" font-weight="700">Orchestrator</text><text x="245" y="258" text-anchor="middle" fill="#d4af37" font-size="11">agents as tools</text>
+    <rect x="360" y="180" width="200" height="58" rx="10" fill="#2a220f" stroke="#d4af37" stroke-width="2"/>
+    <text x="460" y="203" text-anchor="middle" font-weight="700">Inventory agent</text><text x="460" y="222" text-anchor="middle" fill="#d4af37" font-size="11">reorder · stock · sales</text>
+    <rect x="360" y="255" width="200" height="58" rx="10" fill="#2a220f" stroke="#d4af37" stroke-width="2"/>
+    <text x="460" y="278" text-anchor="middle" font-weight="700">CRM agent</text><text x="460" y="297" text-anchor="middle" fill="#d4af37" font-size="11">dormant · history · message</text>
   </g>
-  <g stroke="#2e7d32" stroke-width="2" marker-end="url(#a)">
+  <g stroke="#d4af37" stroke-width="2" marker-end="url(#a)">
     <line x1="140" y1="244" x2="168" y2="244"/><line x1="320" y1="236" x2="358" y2="212"/><line x1="320" y1="252" x2="358" y2="282"/>
   </g>
-  <g stroke="#b26a00" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)">
+  <g stroke="#f3d46b" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)">
     <line x1="560" y1="209" x2="608" y2="209"/><line x1="560" y1="284" x2="608" y2="240"/>
   </g>
-  <text x="584" y="330" fill="#b26a00" font-size="12" text-anchor="middle">read-only deterministic analytics (SQL + Python)</text>
-  <text x="20" y="372" fill="#1b2a1e" font-size="13">All agents: gpt-6-luna via Portkey · read-only tools · usage limits · token usage logged per agent.</text>
-  <text x="20" y="394" fill="#5e6f61" font-size="12">The LLM reads text and explains; code checks, computes, and writes only after the owner approves.</text>
+  <text x="584" y="330" fill="#f3d46b" font-size="12" text-anchor="middle">read-only deterministic analytics (SQL + Python)</text>
+  <text x="20" y="372" fill="#f1e8d0" font-size="13">All agents: gpt-6-luna via Portkey · read-only tools · usage limits · token usage logged per agent.</text>
+  <text x="20" y="394" fill="#b3a787" font-size="12">The LLM reads text and explains; code checks, computes, and writes only after the owner approves.</text>
 </svg>"""
 
 

@@ -40,3 +40,6 @@ Thumbs.db
 
 # Evidence produced from real data (business numbers) stays local
 output/evidence/real_*
+
+# Payment screenshots (customer bank details) stay local
+data/payments/

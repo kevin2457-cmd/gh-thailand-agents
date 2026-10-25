@@ -55,7 +55,9 @@ CREATE TABLE sales (
     sale_date     TEXT NOT NULL,                 -- YYYY-MM-DD
     customer_id   TEXT NOT NULL REFERENCES customers(id),
     source        TEXT NOT NULL DEFAULT 'import' CHECK (source IN ('import', 'wechat', 'excel', 'invoice', 'report', 'chat')),
-    note          TEXT
+    note          TEXT,
+    payment_method TEXT NOT NULL DEFAULT 'unknown',  -- transfer / cash / unpaid / unknown（历史订单）
+    payment_file   TEXT                              -- 转账截图的本地路径（data/payments/，不进 git）
 );
 
 -- 真实订单里价格有泰铢、美元、人民币、USDT，还有 5 折、7 折：原样记下，另存一份折算成美元的实收单价
@@ -114,7 +116,9 @@ CREATE TABLE pending_records (
     reviewed_by   TEXT REFERENCES users(id),
     reviewed_at   TEXT,
     review_note   TEXT,
-    result_ref    TEXT                           -- 批准后生成的 sales.id / purchases.id
+    result_ref    TEXT,                          -- 批准后生成的 sales.id / purchases.id
+    payment_method TEXT NOT NULL DEFAULT 'unknown',  -- transfer / cash / unpaid
+    payment_file   TEXT                              -- 转账截图（本地文件）
 );
 CREATE INDEX idx_pending_status ON pending_records (status);
 

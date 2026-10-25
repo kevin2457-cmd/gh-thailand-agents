@@ -26,7 +26,7 @@ from backend.catalog import CATALOG, candidates, lookup
 from backend.config import PROMPTS_DIR, active_db
 from backend.db import connect
 from backend.llm import UsageRecorder, current_agent, get_model
-from backend.orders import OrderDraft, audit, known_customer_names, redact, submit, validate
+from backend.orders import OrderDraft, audit, known_customer_names, payment_checks, redact, submit, validate
 
 # 循环和超支保护：每个 agent 一次运行的请求数和工具调用数上限
 INTAKE_LIMITS = UsageLimits(request_limit=6, tool_calls_limit=40)
@@ -192,7 +192,8 @@ async def ask(question: str, *, today: date | None = None, db_path: Path | None 
 
 async def intake(text: str, *, customer_code: str, submitted_by: str, source_type: str = "wechat",
                  today: date | None = None, db_path: Path | None = None, hint: str = "",
-                 order_date: str | None = None) -> dict:
+                 order_date: str | None = None, payment_method: str = "unknown",
+                 payment_file: str | None = None) -> dict:
     """录单：脱敏 -> 录单 agent 解析 -> 代码校验 -> 写入待审批队列。返回待审批编号、校验结果、用量。"""
     db_path = db_path or active_db()
     deps = Deps(db_path=db_path, today=today or date.today(), run_id=new_run_id("intake"))
@@ -230,7 +231,10 @@ async def intake(text: str, *, customer_code: str, submitted_by: str, source_typ
             audit(conn, "intake-agent", "agent", "blocked", "intake", deps.run_id,
                   {"reason": "provider content filter (Azure Prompt Shields)"})
         pid = submit(conn, customer_code=customer_code, checked=checked, source_type=source_type,
-                     source_text=safe_text, submitted_by=submitted_by, run_id=deps.run_id)
+                     source_text=safe_text, submitted_by=submitted_by, run_id=deps.run_id,
+                     payment_method=payment_method, payment_file=payment_file)
+        pw, pb = payment_checks(payment_method, payment_file)  # submit 里也加了；这里只是让页面显示出来
+        checked = {**checked, "warnings": checked["warnings"] + pw, "blocking": checked["blocking"] + pb}
         return {"pending_id": pid, "draft": draft.model_dump(), "checked": checked, "redacted_text": safe_text,
                 "trace": deps.trace, "usage": rec.summary(), "content_filtered": filtered}
     finally:
