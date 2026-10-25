@@ -138,3 +138,5 @@
 **Follow-up prompt：** 中途问"还需要什么？"（Claude 列了只有我能提供的基线数字、竞品、真实使用、GitHub）。真实使用时发现录单页没有日期栏：
 
 > 录入这里貌似没有日期
+
+> ok我马上开始。但是先不提交，我想看一下所有东西。https://github.com/Kevinyang2457/gh-thailand-agents.git
