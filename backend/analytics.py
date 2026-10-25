@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import date, timedelta
 from statistics import mean
@@ -135,35 +136,69 @@ def period_starts(today: date) -> dict[str, date]:
             "week": today - timedelta(days=today.weekday()), "today": today}
 
 
-def sales_stats(conn: sqlite3.Connection, today: date) -> list[dict]:
-    """老板要的销售统计：每个时间段的订单数、件数、按原币种的收入（泰铢 / 美金 / 人民币 / USDT），
-    以及折算成美元的合计；再按付款方式分开（转账 / 现金 / 未付款 / 历史订单未记录）。
+def range_stats(conn: sqlite3.Connection, start: date, end: date, top: int = 8) -> dict:
+    """任意日期范围（含首尾两天）的销售：订单数、件数、按原币种的收入、美元合计、按付款方式、卖得最多的产品。
     金额 = 数量 × 单价 × 折扣，只算已批准写入的订单。"""
-    out = []
-    for key, start in period_starts(today).items():
-        args = (start.isoformat(), today.isoformat())
-        n = conn.execute("SELECT COUNT(*) FROM sales WHERE sale_date >= ? AND sale_date <= ?", args).fetchone()[0]
-        by_cur = {r["currency"]: r["amount"] for r in conn.execute(
-            """SELECT si.currency, SUM(si.qty * si.unit_price * si.discount) AS amount
-               FROM sale_items si JOIN sales s ON s.id = si.sale_id
-               WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY si.currency""", args)}
-        units = conn.execute("""SELECT COALESCE(SUM(si.qty), 0) FROM sale_items si JOIN sales s ON s.id = si.sale_id
-                                WHERE s.sale_date >= ? AND s.sale_date <= ?""", args).fetchone()[0]
-        usd_total = conn.execute(
-            """SELECT COALESCE(SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)), 0)
-               FROM sale_items si JOIN sales s ON s.id = si.sale_id
-               WHERE s.sale_date >= ? AND s.sale_date <= ?""", args).fetchone()[0]
-        by_pay = {r["payment_method"]: {"orders": r["n"], "usd": r["usd"]} for r in conn.execute(
-            """SELECT s.payment_method, COUNT(DISTINCT s.id) AS n,
-                      SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)) AS usd
-               FROM sales s JOIN sale_items si ON si.sale_id = s.id
-               WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY s.payment_method""", args)}
-        out.append({"period": key, "from": start.isoformat(), "to": today.isoformat(), "orders": n, "units": units,
-                    "thb": round(by_cur.get("THB", 0) or 0, 2), "usd": round((by_cur.get("USD", 0) or 0)
-                                                                            + (by_cur.get("USDT", 0) or 0), 2),
-                    "cny": round(by_cur.get("CNY", 0) or 0, 2), "total_usd": round(usd_total, 2),
-                    "by_payment": by_pay})
-    return out
+    args = (start.isoformat(), end.isoformat())
+    n = conn.execute("SELECT COUNT(*) FROM sales WHERE sale_date >= ? AND sale_date <= ?", args).fetchone()[0]
+    by_cur = {r["currency"]: r["amount"] or 0 for r in conn.execute(
+        """SELECT si.currency, SUM(si.qty * si.unit_price * si.discount) AS amount
+           FROM sale_items si JOIN sales s ON s.id = si.sale_id
+           WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY si.currency""", args)}
+    units, usd_total = conn.execute(
+        """SELECT COALESCE(SUM(si.qty), 0), COALESCE(SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)), 0)
+           FROM sale_items si JOIN sales s ON s.id = si.sale_id
+           WHERE s.sale_date >= ? AND s.sale_date <= ?""", args).fetchone()
+    by_pay = {r["payment_method"]: {"orders": r["n"], "usd": r["usd"] or 0} for r in conn.execute(
+        """SELECT s.payment_method, COUNT(DISTINCT s.id) AS n,
+                  SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)) AS usd
+           FROM sales s JOIN sale_items si ON si.sale_id = s.id
+           WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY s.payment_method""", args)}
+    top_products = [dict(r) for r in conn.execute(
+        """SELECT si.sku, p.name, p.size, SUM(si.qty) AS qty,
+                  ROUND(SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)), 2) AS usd
+           FROM sale_items si JOIN sales s ON s.id = si.sale_id JOIN products p ON p.sku = si.sku
+           WHERE s.sale_date >= ? AND s.sale_date <= ? GROUP BY si.sku ORDER BY usd DESC LIMIT ?""", (*args, top))]
+    return {"from": start.isoformat(), "to": end.isoformat(), "orders": n, "units": units,
+            "thb": round(by_cur.get("THB", 0), 2), "usd": round(by_cur.get("USD", 0) + by_cur.get("USDT", 0), 2),
+            "cny": round(by_cur.get("CNY", 0), 2), "total_usd": round(usd_total, 2), "by_payment": by_pay,
+            "top_products": top_products, "unpaid": unpaid_summary(conn, start, end)}
+
+
+def unpaid_orders(conn: sqlite3.Connection, start: date | None = None, end: date | None = None) -> list[dict]:
+    """未付款（待收款）的订单：付款方式是"未付款"、还在待审批队列里的单。按规则它们不能批准，所以不算进销售；
+    这里单独列出来（老板要求），金额按订单原币种 + 美元合计。可选按订单日期过滤。"""
+    rows = []
+    for r in conn.execute("SELECT id, payload_json, submitted_at FROM pending_records "
+                          "WHERE status = 'pending' AND payment_method = 'unpaid' ORDER BY id"):
+        p = json.loads(r["payload_json"])
+        d = date.fromisoformat(p["order_date"])
+        if (start and d < start) or (end and d > end):
+            continue
+        amt = {"THB": 0.0, "USD": 0.0, "CNY": 0.0}
+        usd = 0.0
+        for l in p["lines"]:
+            if l.get("unit_price") is None:
+                continue
+            cur = "USD" if (l.get("currency") or "USD") == "USDT" else (l.get("currency") or "USD")
+            amt[cur] = amt.get(cur, 0) + l["qty"] * l["unit_price"] * l.get("discount", 1)
+            usd += l["qty"] * (l.get("unit_price_usd") or 0)
+        rows.append({"pending_id": r["id"], "customer": p["customer"], "order_date": p["order_date"],
+                     "thb": round(amt["THB"], 2), "usd": round(amt["USD"], 2), "cny": round(amt["CNY"], 2),
+                     "total_usd": round(usd, 2), "lines": len(p["lines"])})
+    return rows
+
+
+def unpaid_summary(conn: sqlite3.Connection, start: date | None = None, end: date | None = None) -> dict:
+    rows = unpaid_orders(conn, start, end)
+    return {"orders": len(rows), "thb": round(sum(r["thb"] for r in rows), 2), "usd": round(sum(r["usd"] for r in rows), 2),
+            "total_usd": round(sum(r["total_usd"] for r in rows), 2)}
+
+
+def sales_stats(conn: sqlite3.Connection, today: date) -> list[dict]:
+    """老板要的销售统计：今年、本月、本周、今天（每段都用 range_stats 算，口径一致）。"""
+    return [{"period": key, **range_stats(conn, start, today), "unpaid": unpaid_summary(conn, start, today)}
+            for key, start in period_starts(today).items()]
 
 
 def sales_summary(conn: sqlite3.Connection, today: date, days: int = 30) -> dict:

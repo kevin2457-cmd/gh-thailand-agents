@@ -251,28 +251,79 @@ def user_role(conn: sqlite3.Connection, user_id: str) -> str:
 
 
 PAYMENT_METHODS = ("transfer", "cash", "unpaid", "unknown")
+# 老板 10/24 的规则：能批准的前提是"有付款截图（一张或多张）"或者"现金且老板确认收到"
 CASH_BLOCK = "现金付款：老板确认已收到现金后才能批准"
+PROOF_BLOCK = "转账：至少上传一张付款截图后才能批准"
+UNPAID_BLOCK = "未付款：上传付款截图，或改成现金并由老板确认，才能批准"
+PAYMENT_BLOCKS = (CASH_BLOCK, PROOF_BLOCK, UNPAID_BLOCK)
 
 
-def payment_checks(payment_method: str, payment_file: str | None) -> tuple[list[str], list[str]]:
-    """老板的规则：转账要有截图；现金必须老板确认收到；未付款提醒。返回 (warnings, blocking)。"""
+def proof_files(value: str | list | None) -> list[str]:
+    """payment_file 列存 JSON 数组（可以多张截图）；兼容早期只存一个路径的写法。"""
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    if value.startswith("["):
+        return json.loads(value)
+    return [value]
+
+
+def payment_checks(payment_method: str, payment_file: str | list | None) -> tuple[list[str], list[str]]:
+    """返回 (warnings, blocking)。历史导入的订单（unknown）不受这条规则限制。"""
     if payment_method == "cash":
         return [], [CASH_BLOCK]
-    if payment_method == "transfer" and not payment_file:
-        return ["转账但没有上传付款截图"], []
+    if payment_method == "transfer" and not proof_files(payment_file):
+        return [], [PROOF_BLOCK]
     if payment_method == "unpaid":
-        return ["客户还没有付款（未付款 / 赊账）"], []
+        return [], [UNPAID_BLOCK]
     return [], []
+
+
+def _set_payment(conn: sqlite3.Connection, pending_id: int, method: str, files: list[str]) -> None:
+    """改付款方式 / 截图，并按规则重新计算付款相关的"必须处理"项（数据库里的两处都更新）。"""
+    row = conn.execute("SELECT payload_json, warnings, status FROM pending_records WHERE id = ?", (pending_id,)).fetchone()
+    if row is None or row["status"] != "pending":
+        raise ValueError("这条记录不在待审批状态")
+    payload = json.loads(row["payload_json"])
+    warns = json.loads(row["warnings"])
+    _, new_blocks = payment_checks(method, files)
+    payload["blocking"] = [b for b in payload["blocking"] if b not in PAYMENT_BLOCKS] + new_blocks
+    warns = [w for w in warns if w not in PAYMENT_BLOCKS] + new_blocks
+    conn.execute("UPDATE pending_records SET payload_json = ?, warnings = ?, payment_method = ?, payment_file = ? "
+                 "WHERE id = ?", (json.dumps(payload, ensure_ascii=False), json.dumps(warns, ensure_ascii=False),
+                                  method, json.dumps(files) if files else None, pending_id))
+
+
+def add_payment_proof(conn: sqlite3.Connection, pending_id: int, files: list[str], user_id: str) -> None:
+    """补传付款截图（员工或老板都可以）：付款方式变成转账，"未付款 / 缺截图"的阻挡自动解除。"""
+    role = user_role(conn, user_id)
+    row = conn.execute("SELECT payment_file FROM pending_records WHERE id = ?", (pending_id,)).fetchone()
+    if row is None:
+        raise ValueError("这条记录不在待审批状态")
+    all_files = proof_files(row["payment_file"]) + list(files)
+    _set_payment(conn, pending_id, "transfer", all_files)
+    audit(conn, user_id, role, "payment_proof", "pending_records", str(pending_id), {"files": len(all_files)})
+    conn.commit()
+
+
+def set_cash(conn: sqlite3.Connection, pending_id: int, user_id: str) -> None:
+    """改成现金付款：仍然要老板确认收到现金才能批准。"""
+    role = user_role(conn, user_id)
+    _set_payment(conn, pending_id, "cash", [])
+    audit(conn, user_id, role, "payment_cash", "pending_records", str(pending_id), {})
+    conn.commit()
 
 
 def submit(conn: sqlite3.Connection, *, customer_code: str, checked: dict, source_type: str,
            source_text: str, submitted_by: str, run_id: str | None = None,
-           payment_method: str = "unknown", payment_file: str | None = None) -> int:
+           payment_method: str = "unknown", payment_file: str | list | None = None) -> int:
     """员工或老板提交一张待审批的销售单。只写 pending_records 和 audit_log。"""
     role = user_role(conn, submitted_by)
     if payment_method not in PAYMENT_METHODS:
         raise ValueError(f"未知付款方式 {payment_method}")
-    pw, pb = payment_checks(payment_method, payment_file)
+    files = proof_files(payment_file)
+    pw, pb = payment_checks(payment_method, files)
     checked = {**checked, "warnings": checked["warnings"] + pw, "blocking": checked["blocking"] + pb}
     payload = {"customer": customer_code, "order_date": checked["order_date"], "lines": checked["lines"],
                "blocking": checked["blocking"], "run_id": run_id}
@@ -281,12 +332,12 @@ def submit(conn: sqlite3.Connection, *, customer_code: str, checked: dict, sourc
         "payment_method, payment_file) VALUES ('sale', ?, ?, ?, ?, ?, ?, ?, ?)",
         (json.dumps(payload, ensure_ascii=False), source_type, source_text,
          json.dumps(checked["warnings"] + checked["blocking"], ensure_ascii=False), submitted_by, _now(),
-         payment_method, payment_file))
+         payment_method, json.dumps(files) if files else None))
     pid = cur.lastrowid
     audit(conn, submitted_by, role, "submit", "pending_records", str(pid),
           {"customer": customer_code, "lines": len(checked["lines"]), "blocking": len(checked["blocking"]),
            "warnings": len(checked["warnings"]), "run_id": run_id, "payment": payment_method,
-           "proof": bool(payment_file)})
+           "proofs": len(files)})
     conn.commit()
     return pid
 
@@ -323,13 +374,17 @@ def confirm_cash(conn: sqlite3.Connection, pending_id: int, user_id: str) -> Non
     """老板确认已收到现金：去掉"现金付款"这条必须处理的问题，记审计日志。"""
     if user_role(conn, user_id) != "owner":
         raise PermissionError("只有老板可以确认收到现金")
-    row = conn.execute("SELECT payload_json, status FROM pending_records WHERE id = ?", (pending_id,)).fetchone()
+    row = conn.execute("SELECT payload_json, warnings, status, payment_method FROM pending_records WHERE id = ?",
+                       (pending_id,)).fetchone()
     if row is None or row["status"] != "pending":
         raise ValueError("这条记录不在待审批状态")
+    if row["payment_method"] != "cash":
+        raise ValueError("这一单不是现金付款")
     payload = json.loads(row["payload_json"])
     payload["blocking"] = [b for b in payload["blocking"] if b != CASH_BLOCK]
-    conn.execute("UPDATE pending_records SET payload_json = ? WHERE id = ?",
-                 (json.dumps(payload, ensure_ascii=False), pending_id))
+    warns = [w for w in json.loads(row["warnings"]) if w != CASH_BLOCK]
+    conn.execute("UPDATE pending_records SET payload_json = ?, warnings = ? WHERE id = ?",
+                 (json.dumps(payload, ensure_ascii=False), json.dumps(warns, ensure_ascii=False), pending_id))
     audit(conn, user_id, "owner", "cash_confirmed", "pending_records", str(pending_id), {})
     conn.commit()
 

@@ -184,3 +184,13 @@ table.simple tr:hover td { background: rgba(212, 175, 55, 0.04); }
 .stat-total { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--gold-dark); }
 .stat-total span { color: var(--muted); font-size: 12px; }
 .stat-total b { color: var(--gold-2); font-size: 18px; }
+
+/* unpaid (to collect) */
+.stat-unpaid { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 6px 8px; border-radius: 8px;
+  background: rgba(255, 123, 123, 0.10); border: 1px solid rgba(255, 123, 123, 0.45); font-size: 13px; color: var(--bad); }
+.stat-unpaid b { color: var(--bad); }
+.unpaid-panel { border-color: rgba(255, 123, 123, 0.55); }
+.unpaid-panel h2 { color: var(--bad); }
+.card.unpaid { border-left-color: var(--bad); border-color: rgba(255, 123, 123, 0.55); }
+.upload.small { padding: 10px; font-size: 13px; margin: 0; flex: 1; }
+.pay-fix { display: flex; gap: 10px; align-items: stretch; margin: 8px 0; flex-wrap: wrap; }
