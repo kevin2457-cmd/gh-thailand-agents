@@ -200,3 +200,8 @@ table.simple tr:hover td { background: rgba(212, 175, 55, 0.04); }
 /* customer profile */
 .assign-box { margin-top: 14px; padding: 12px; border: 1px dashed var(--gold-dark); border-radius: 10px; }
 .dash-dropdown-value-item, .dash-dropdown-multi-value { color: var(--text); }
+
+/* 下拉框的占位提示和清除按钮：Dash 默认是深蓝色，黑底上看不见，改成金色 */
+.dash-dropdown-placeholder, .dash-dropdown-value.dash-dropdown-placeholder { color: var(--gold) !important; opacity: 0.85; }
+.dash-dropdown-clear, .dash-dropdown-clear svg { color: var(--gold-2) !important; fill: var(--gold-2) !important; }
+input::placeholder, textarea::placeholder { color: var(--gold); opacity: 0.6; }

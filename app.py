@@ -317,6 +317,7 @@ def serve_layout() -> html.Div:
                 html.Div(id="inventory-body")])),
             tab("tab_customers", "customers", html.Div(className="tab-body", children=[
                 profile_panel(lang),
+                html.Div(id="fixprice-out", style={"marginTop": "14px"}),
                 html.Div(id="customers-body", style={"marginTop": "14px"}),
                 html.Div(className="panel", children=[
                     html.H2(t(lang, "followup_h")),
@@ -845,6 +846,7 @@ def render_customers(_r, tab, lang):
         m = names_map(conn, lang)
         dormant = analytics.dormant_customers(conn, today())
         sp = customers.spend_ranking(conn)
+        fixes = customers.missing_prices(conn)
     head = html.Tr([html.Th(t(lang, k) if k else "") for k in ("col_customer", "c_orders", "c_gap", "c_silent", "c_overdue",
                                                            "c_usual", "")])
     body = [html.Tr([
@@ -881,8 +883,45 @@ def render_customers(_r, tab, lang):
             html.H2(t(lang, "all_customers_h", n=len(allc))), spend_kpis,
             html.Div(t(lang, "spend_note", n=sp["unlabeled_orders"], usd=money(sp["unlabeled_usd"], "USD"))
                      if sp["unlabeled_orders"] else t(lang, "spend_note_all"), className="muted", style={"marginBottom": "8px"}),
+            price_fix_box(fixes, m, lang),
             html.Table(all_rows, className="simple")]),
     ]
+
+
+def price_fix_box(fixes: list[dict], m: dict, lang: str):
+    """已批准但没写单价的订单行：金额按 0 算，老板在这里补上。"""
+    if not fixes:
+        return None
+    rows = [html.Div(className="row", style={"marginTop": "6px"}, children=[
+        html.Span(f"{f['sale_date']} · {m.get(f['code'], f['code'])} · {f['name']} ×{f['qty']}", style={"minWidth": "360px"}),
+        dcc.Input(id={"type": "fixprice-in", "key": f"{f['sale_id']}|{f['sku']}"}, type="number", min=0,
+                  placeholder=t(lang, "col_price"), className="text-input", style={"width": "130px"}),
+        dcc.Dropdown(id={"type": "fixprice-cur", "key": f"{f['sale_id']}|{f['sku']}"}, value=f["currency"] or "THB",
+                     clearable=False, options=["THB", "USD", "USDT", "CNY"], style={"width": "110px"}),
+        html.Button(t(lang, "fix_btn"), id={"type": "fixprice-btn", "key": f"{f['sale_id']}|{f['sku']}"},
+                    className="btn small", n_clicks=0),
+    ]) for f in fixes]
+    return html.Div(className="unpaid-panel", style={"marginBottom": "12px"}, children=[
+        html.B(t(lang, "fix_h", n=len(fixes)), className="bad-text"), html.Div(t(lang, "fix_note"), className="muted"), *rows])
+
+
+@app.callback(Output("fixprice-out", "children"), Output("refresh", "data", allow_duplicate=True),
+              Input({"type": "fixprice-btn", "key": ALL}, "n_clicks"),
+              State({"type": "fixprice-in", "key": ALL}, "value"), State({"type": "fixprice-cur", "key": ALL}, "value"),
+              State("role", "value"), State("refresh", "data"), State("lang", "data"), prevent_initial_call=True)
+def fix_price(_clicks, prices, curs, role, refresh, lang):
+    if not ctx.triggered or not ctx.triggered[0]["value"]:
+        return no_update, no_update
+    key = ctx.triggered_id["key"]
+    keys = [x["id"]["key"] for x in ctx.states_list[0]]
+    i = keys.index(key)
+    sale_id, sku = key.split("|", 1)
+    try:
+        with db() as conn:
+            customers.set_price(conn, sale_id, sku, prices[i], curs[i], role)
+    except (ValueError, PermissionError) as e:
+        return html.Div(tr(str(e), lang), className="flash bad"), no_update
+    return html.Div(t(lang, "fix_done", sale=sale_id), className="flash ok"), (refresh or 0) + 1
 
 
 @app.callback(Output("followup-out", "children"), Input({"type": "followup", "code": ALL}, "n_clicks"),

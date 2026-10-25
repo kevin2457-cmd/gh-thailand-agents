@@ -10,8 +10,8 @@ from datetime import date
 from statistics import mean
 
 from backend.analytics import top_products
-from backend.config import UNLABELED_CODE
-from backend.orders import audit, user_role
+from backend.config import FX_TO_USD, UNLABELED_CODE
+from backend.orders import audit, to_usd, user_role
 
 EDITABLE = ("name", "wechat_alias", "phone", "address", "region", "type", "notes")
 TYPES = ("grow_shop", "farm", "reseller", "retail")
@@ -131,3 +131,37 @@ def spend_ranking(conn: sqlite3.Connection) -> dict:
     return {"rows": rows, "total_usd": round(total, 2), "thb": round(sum(r["thb"] for r in rows), 2),
             "usd": round(sum(r["usd"] for r in rows), 2),
             "unlabeled_usd": round(unl["total_usd"], 2) if unl else 0.0, "unlabeled_orders": unl["orders"] if unl else 0}
+
+
+def missing_prices(conn: sqlite3.Connection) -> list[dict]:
+    """已批准但没有单价的订单行（录单时聊天/截图里没写价格），金额按 0 算，需要老板补上。"""
+    rows = conn.execute(
+        """SELECT s.id AS sale_id, s.sale_date, c.code, si.sku, p.name, si.qty, si.currency
+           FROM sale_items si JOIN sales s ON s.id = si.sale_id JOIN customers c ON c.id = s.customer_id
+           JOIN products p ON p.sku = si.sku
+           WHERE si.unit_price = 0 AND COALESCE(si.unit_price_usd, 0) = 0 ORDER BY s.sale_date, s.id""")
+    return [dict(r) for r in rows]
+
+
+def set_price(conn: sqlite3.Connection, sale_id: str, sku: str, unit_price, currency: str, user_id: str) -> None:
+    """老板给已批准订单补单价（不改数量和库存），同时算好折美元单价。"""
+    role = user_role(conn, user_id)
+    if role != "owner":
+        audit(conn, user_id, role, "blocked", "sale_items", f"{sale_id}/{sku}", {"reason": "非老板尝试补单价"})
+        conn.commit()
+        raise PermissionError("只有老板可以补单价")
+    try:
+        price = float(unit_price)
+    except (TypeError, ValueError):
+        price = 0
+    if price <= 0:
+        raise ValueError("单价必须大于 0")
+    if currency not in FX_TO_USD:
+        raise ValueError(f"不支持的币种 {currency}")
+    row = conn.execute("SELECT discount FROM sale_items WHERE sale_id = ? AND sku = ?", (sale_id, sku)).fetchone()
+    if row is None:
+        raise ValueError(f"没有这一行订单 {sale_id} {sku}")
+    conn.execute("UPDATE sale_items SET unit_price = ?, currency = ?, unit_price_usd = ? WHERE sale_id = ? AND sku = ?",
+                 (price, currency, round(to_usd(price * row["discount"], currency), 2), sale_id, sku))
+    audit(conn, user_id, role, "set_price", "sale_items", f"{sale_id}/{sku}", {"unit_price": price, "currency": currency})
+    conn.commit()

@@ -72,3 +72,20 @@ def test_spend_ranking_matches_profiles(conn):
     top = sp["rows"][0]
     assert round(top["total_usd"], 2) == cu.profile(conn, top["code"], TODAY)["total_usd"]
     assert abs(sum(r["share"] for r in sp["rows"]) - 100) < 1
+
+
+def test_owner_fills_missing_price(conn):
+    d = OrderDraft(order_date="2026-10-20", lines=[OrderLineDraft(product_text="B52", qty=3)])
+    pid = submit(conn, customer_code="CUST-002", checked=validate(conn, d, "", TODAY, customer_code="CUST-002"),
+                 source_type="report", source_text="", submitted_by="U01")
+    sale = approve(conn, pid, "U01")
+    miss = [f for f in cu.missing_prices(conn) if f["sale_id"] == sale]
+    assert len(miss) == 1
+    before = cu.profile(conn, "CUST-002", TODAY)["total_usd"]
+    with pytest.raises(PermissionError):
+        cu.set_price(conn, sale, miss[0]["sku"], 600, "USD", "U02")
+    with pytest.raises(ValueError):
+        cu.set_price(conn, sale, miss[0]["sku"], 0, "USD", "U01")
+    cu.set_price(conn, sale, miss[0]["sku"], 600, "USD", "U01")
+    assert not [f for f in cu.missing_prices(conn) if f["sale_id"] == sale]
+    assert cu.profile(conn, "CUST-002", TODAY)["total_usd"] == round(before + 1800, 2)
