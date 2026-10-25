@@ -16,10 +16,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from backend.config import DB_PATH, EVIDENCE_DIR, PRICES_PER_1M, REAL_DB_PATH  # noqa: E402
 
-# 使用量假设（老板确认前是估计；报告里会写明）：一个"用户" = 一个录单员工或老板的账号
-INTAKES_PER_DAY = 8      # 每个工作日录 8 单
-QUESTIONS_PER_DAY = 4    # 每个工作日问 4 个问题
+# 使用量假设：一个"用户" = 一个录单员工或老板的账号，每月 26 个工作日
 WORKDAYS = 26
+PROFILES = {
+    # 老板 10/24 填写：现在每周 2–3 单（≈ 每月 12 单）；问题按每个工作日 3 个估计
+    "this_business": {"label": "GH Thailand today (owner: 2-3 orders/week)", "intakes_per_month": 12,
+                      "questions_per_month": 3 * WORKDAYS},
+    # 规模化时的保守（偏高）假设：一个忙碌的录单员工
+    "heavy": {"label": "Busy distributor seat (8 orders + 4 questions per workday)",
+              "intakes_per_month": 8 * WORKDAYS, "questions_per_month": 4 * WORKDAYS},
+}
 
 
 def load_runs(paths: list[Path]) -> list[dict]:
@@ -64,20 +70,16 @@ def main() -> None:
     args = ap.parse_args()
     runs = load_runs(args.db or [REAL_DB_PATH, DB_PATH])
     s = {k: stats([r for r in runs if r["kind"] == k]) for k in ("intake", "ask")}
-    per_user_month = WORKDAYS * (INTAKES_PER_DAY * s["intake"]["cost_per_run_mean"]
-                                 + QUESTIONS_PER_DAY * s["ask"]["cost_per_run_mean"])
-    per_user_month_nc = WORKDAYS * (INTAKES_PER_DAY * s["intake"]["cost_per_run_without_cache"]
-                                    + QUESTIONS_PER_DAY * s["ask"]["cost_per_run_without_cache"])
-    out = {
-        "model": "gpt-6-luna", "prices_per_1m_usd": PRICES_PER_1M,
-        "assumptions": {"intakes_per_day": INTAKES_PER_DAY, "questions_per_day": QUESTIONS_PER_DAY,
-                        "workdays_per_month": WORKDAYS},
-        "measured": s,
-        "per_user_per_month_usd": per_user_month,
-        "per_user_per_month_without_cache_usd": per_user_month_nc,
-        "scale_usd_per_month": {n: per_user_month * n for n in (1, 3, 100, 10_000)},
-        "scale_without_cache_usd_per_month": {n: per_user_month_nc * n for n in (1, 3, 100, 10_000)},
-    }
+    def monthly(pr: dict, key: str) -> float:
+        return pr["intakes_per_month"] * s["intake"][key] + pr["questions_per_month"] * s["ask"][key]
+
+    prof = {}
+    for name, pr in PROFILES.items():
+        m, nc = monthly(pr, "cost_per_run_mean"), monthly(pr, "cost_per_run_without_cache")
+        prof[name] = {**pr, "per_user_per_month_usd": m, "per_user_per_month_without_cache_usd": nc,
+                      "scale_usd_per_month": {n: m * n for n in (1, 100, 10_000)},
+                      "scale_without_cache_usd_per_month": {n: nc * n for n in (1, 100, 10_000)}}
+    out = {"model": "gpt-6-luna", "prices_per_1m_usd": PRICES_PER_1M, "measured": s, "profiles": prof}
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     (EVIDENCE_DIR / "tokenomics.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
@@ -88,11 +90,12 @@ def main() -> None:
         md.append(f"| {label} | {x['runs']} | {x['requests_per_run']} | {x['input_tokens_per_run']:,} | "
                   f"{x['cached_tokens_per_run']:,} | {x['output_tokens_per_run']:,} | {x['cache_hit_rate']:.0%} | "
                   f"${x['cost_per_run_mean']:.5f} | ${x['cost_per_run_without_cache']:.5f} |")
-    md += ["", f"Per user per month ({INTAKES_PER_DAY} orders + {QUESTIONS_PER_DAY} questions per day, {WORKDAYS} days): "
-               f"**${per_user_month:.3f}** (without prompt caching ${per_user_month_nc:.3f})", "",
-           "| Users | LLM cost / month | Without caching |", "|---|---|---|"]
-    for n in (1, 3, 100, 10_000):
-        md.append(f"| {n:,} | ${per_user_month * n:,.2f} | ${per_user_month_nc * n:,.2f} |")
+    md += ["", "| Usage profile | Orders / month | Questions / month | Cost / user / month | 100 users | "
+               "10,000 users | 10,000 users without caching |", "|---|---|---|---|---|---|---|"]
+    for pr in prof.values():
+        md.append(f"| {pr['label']} | {pr['intakes_per_month']} | {pr['questions_per_month']} | "
+                  f"${pr['per_user_per_month_usd']:.3f} | ${pr['scale_usd_per_month'][100]:,.2f} | "
+                  f"${pr['scale_usd_per_month'][10_000]:,.2f} | ${pr['scale_without_cache_usd_per_month'][10_000]:,.2f} |")
     (EVIDENCE_DIR / "tokenomics.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print("\n".join(md))
 

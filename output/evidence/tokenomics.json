@@ -6,47 +6,64 @@
     "cache_write": 0.125,
     "output": 0.5
   },
-  "assumptions": {
-    "intakes_per_day": 8,
-    "questions_per_day": 4,
-    "workdays_per_month": 26
-  },
   "measured": {
     "intake": {
-      "runs": 41,
+      "runs": 43,
       "requests_per_run": 2,
-      "input_tokens_per_run": 6175,
-      "cached_tokens_per_run": 5605,
-      "output_tokens_per_run": 540,
+      "input_tokens_per_run": 6174,
+      "cached_tokens_per_run": 5607,
+      "output_tokens_per_run": 561,
       "cache_hit_rate": 0.908,
-      "cost_per_run_mean": 0.0003831178048780488,
+      "cost_per_run_mean": 0.0003931260465116279,
       "cost_per_run_median": 0.0003522,
-      "cost_per_run_without_cache": 0.0008875853658536585
+      "cost_per_run_without_cache": 0.0008977372093023256
     },
     "ask": {
-      "runs": 6,
-      "requests_per_run": 4,
-      "input_tokens_per_run": 3636,
+      "runs": 9,
+      "requests_per_run": 4.22,
+      "input_tokens_per_run": 3518,
       "cached_tokens_per_run": 0,
-      "output_tokens_per_run": 456,
+      "output_tokens_per_run": 479,
       "cache_hit_rate": 0.0,
-      "cost_per_run_mean": 0.00059165,
-      "cost_per_run_median": 0.0005061,
-      "cost_per_run_without_cache": 0.00059165
+      "cost_per_run_mean": 0.0005910444444444445,
+      "cost_per_run_median": 0.00040689999999999997,
+      "cost_per_run_without_cache": 0.0005910444444444445
     }
   },
-  "per_user_per_month_usd": 0.14122010341463415,
-  "per_user_per_month_without_cache_usd": 0.24614935609756097,
-  "scale_usd_per_month": {
-    "1": 0.14122010341463415,
-    "3": 0.42366031024390244,
-    "100": 14.122010341463415,
-    "10000": 1412.2010341463415
-  },
-  "scale_without_cache_usd_per_month": {
-    "1": 0.24614935609756097,
-    "3": 0.738448068292683,
-    "100": 24.6149356097561,
-    "10000": 2461.49356097561
+  "profiles": {
+    "this_business": {
+      "label": "GH Thailand today (owner: 2-3 orders/week)",
+      "intakes_per_month": 12,
+      "questions_per_month": 78,
+      "per_user_per_month_usd": 0.0508189792248062,
+      "per_user_per_month_without_cache_usd": 0.056874313178294576,
+      "scale_usd_per_month": {
+        "1": 0.0508189792248062,
+        "100": 5.0818979224806204,
+        "10000": 508.189792248062
+      },
+      "scale_without_cache_usd_per_month": {
+        "1": 0.056874313178294576,
+        "100": 5.687431317829458,
+        "10000": 568.7431317829457
+      }
+    },
+    "heavy": {
+      "label": "Busy distributor seat (8 orders + 4 questions per workday)",
+      "intakes_per_month": 208,
+      "questions_per_month": 104,
+      "per_user_per_month_usd": 0.14323883989664082,
+      "per_user_per_month_without_cache_usd": 0.24819796175710593,
+      "scale_usd_per_month": {
+        "1": 0.14323883989664082,
+        "100": 14.323883989664083,
+        "10000": 1432.3883989664082
+      },
+      "scale_without_cache_usd_per_month": {
+        "1": 0.24819796175710593,
+        "100": 24.819796175710593,
+        "10000": 2481.9796175710594
+      }
+    }
   }
 }

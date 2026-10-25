@@ -1,7 +1,7 @@
 [
   {
     "question": "哪些产品需要马上补货？",
-    "seconds": 1.6,
+    "seconds": 1.8,
     "answer": "需要马上补货的产品：\n\n- **Cal-Mag Plus（6gal）**：现货 **0**；建议下单日期 **2026-08-13**\n- **Big Bud**：现货 **5**；建议下单日期 **2026-08-24**\n- **Floralicious Plus（6gal）**：现货 **13**；建议下单日期 **2026-10-09**\n- **Liquid KoolBloom（6gal）**：现货 **11**；建议下单日期 **2026-10-09**",
     "tools": [
       [
@@ -14,7 +14,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-8a3299c4",
+      "run_id": "ask-2026-10-24-18a35d33",
       "total": {
         "requests": 4,
         "input_tokens": 5099,
@@ -42,7 +42,7 @@
   },
   {
     "question": "下一个货柜（大约 60 天后到）应该多订哪些产品？",
-    "seconds": 13.5,
+    "seconds": 1.3,
     "answer": "下一个货柜约 **60 天后**到，建议优先追加：\n\n1. **Cal-Mag Plus（6gal）**：现货为零，优先补货；报告建议 **2026-08-13** 前下单。\n2. **Big Bud**：现货 **5**，覆盖约 **-1.9 天**；建议 **2026-08-24** 前下单。\n3. **Floralicious Plus（6gal）**：现货 **13**，覆盖约 **45.7 天**；建议 **2026-10-09** 前下单。\n4. **Liquid KoolBloom（6gal）**：现货 **11**，覆盖约 **45 天**；建议 **2026-10-09** 前下单。\n5. **Monster Bloom**：现货 **37**，覆盖约 **65.9 天**，可排在以上产品之后；建议 **2026-10-29** 前下单。\n\n报告没有提供建议订货数量。",
     "tools": [
       [
@@ -55,7 +55,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-9d6a663b",
+      "run_id": "ask-2026-10-24-2773d2d4",
       "total": {
         "requests": 4,
         "input_tokens": 5268,
@@ -83,7 +83,7 @@
   },
   {
     "question": "哪些老客户很久没下单了？",
-    "seconds": 5.6,
+    "seconds": 1.1,
     "answer": "以下老客户已达到系统的沉默判定条件（系统未提供客户姓名）：\n\n| 客户代码 | 最近下单时间 |\n|---|---|\n| CUST-006 | 2026-06-27 |\n| CUST-038 | 2026-07-21 |\n| CUST-004 | 2026-06-30 |\n| CUST-005 | 2026-08-21 |\n| CUST-001 | 2026-08-14 |\n| CUST-039 | 2026-07-20 |",
     "tools": [
       [
@@ -96,7 +96,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-26fdf34a",
+      "run_id": "ask-2026-10-24-228f12c0",
       "total": {
         "requests": 4,
         "input_tokens": 2074,
@@ -124,7 +124,7 @@
   },
   {
     "question": "最近 30 天卖得最好的 5 个产品是什么，销售额多少？",
-    "seconds": 5.6,
+    "seconds": 1.1,
     "answer": "最近30天按销售额排名前 5 的产品（美元）：\n\n1. Athena Pro Core：$40,835.20\n2. Athena Pro Bloom：$18,763.12\n3. Athena Pro Balance：$12,126.48\n4. FloraPro Bloom：$11,261.65\n5. FloraPro Late Bloom：$8,810.21",
     "tools": [
       [
@@ -137,7 +137,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-3648f632",
+      "run_id": "ask-2026-10-24-709274d1",
       "total": {
         "requests": 4,
         "input_tokens": 2254,
@@ -165,7 +165,7 @@
   },
   {
     "question": "给最久没下单的客户写一条跟进话术。",
-    "seconds": 6.1,
+    "seconds": 1.3,
     "answer": "最久未下单的客户是 **CUST-006**，已 **119 天**未下单。\n\n跟进话术：您好，最近还需要补货 BioRoot、Cyco Supa Stiky 或 FloraPro Late Bloom 吗？如果需要，欢迎告诉我您这次的需求。",
     "tools": [
       [
@@ -178,7 +178,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-05cdbdd1",
+      "run_id": "ask-2026-10-24-07ece915",
       "total": {
         "requests": 4,
         "input_tokens": 2076,
@@ -206,7 +206,7 @@
   },
   {
     "question": "Monster Bloom 还剩多少？会不会在下一批货到之前断货？",
-    "seconds": 22.8,
+    "seconds": 1.1,
     "answer": "Monster Bloom 现有 37 件，在途 0 件。按当前销售速度，约可覆盖 65.9 天；预计下一批货到之前不会断货。建议在 2026 年 10 月 29 日前安排补货。",
     "tools": [
       [
@@ -219,7 +219,7 @@
       ]
     ],
     "usage": {
-      "run_id": "ask-2026-10-24-20a6c838",
+      "run_id": "ask-2026-10-24-bbb67e41",
       "total": {
         "requests": 4,
         "input_tokens": 5048,

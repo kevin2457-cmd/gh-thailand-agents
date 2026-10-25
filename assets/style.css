@@ -89,7 +89,18 @@ textarea { min-height: 190px; resize: vertical; }
 .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
-/* dash dropdown dark */
+/* Dash 4 dropdown / textarea: dark */
+button.dash-dropdown, .dash-textarea, textarea.dash-textarea {
+  background: var(--panel-2) !important; color: var(--text) !important; border: 1px solid var(--line) !important;
+  border-radius: 10px !important; }
+button.dash-dropdown { min-height: 40px; width: 100%; text-align: left; padding: 6px 10px; }
+button.dash-dropdown svg, button.dash-dropdown path { color: var(--pink-2) !important; fill: var(--pink-2); }
+.dash-dropdown-content, .dash-dropdown-options, .dash-dropdown-option, .dash-dropdown-search,
+.dash-dropdown-content input { background: var(--panel-2) !important; color: var(--text) !important; }
+.dash-dropdown-option:hover, .dash-dropdown-option[aria-selected="true"] { background: var(--pink-dim) !important; }
+.dash-textarea::placeholder, input::placeholder { color: #7d7688; }
+
+/* dash dropdown dark (Dash 2/3 class names) */
 .Select-control, .Select-menu-outer, .Select-option, .Select-value-label, .VirtualizedSelectOption {
   background: var(--panel-2) !important; color: var(--text) !important; border-color: var(--line) !important; }
 .Select-option.is-focused, .VirtualizedSelectFocusedOption { background: var(--pink-dim) !important; }
