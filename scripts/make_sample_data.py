@@ -1,6 +1,6 @@
 """生成模拟数据集 data/sample/*.csv（固定随机种子，每次结果相同）。
 
-SKU 是真实的 General Hydroponics 产品；客户、订单、价格、库存全部是模拟的。
+产品是真实的产品目录（backend/catalog.py）；客户、订单、价格、库存全部是模拟的。
 模拟一年的业务（截至 TODAY），并刻意留下几个演示场景：
   - 几个客户按自己的周期稳定下单，然后突然不再下单（沉睡客户）
   - 几个 SKU 最近没有及时补货，库存接近或低于安全库存（补货提醒）
@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from backend.catalog import CATALOG  # noqa: E402
 from backend.config import SAMPLE_DIR  # noqa: E402
 
 SEED = 409
@@ -31,37 +32,26 @@ USERS = [
 ]
 
 SUPPLIERS = [
-    ("S01", "General Hydroponics (USA)", "USA", 35),
-    ("S02", "Advanced Nutrients (sample distributor)", "Canada", 21),
+    ("S01", "US brands via Los Angeles container (sample)", "USA", 60),
 ]
 
-# sku, brand, name, size, units_per_case, cost_thb/case, price_thb/case, supplier, aliases
+# 产品 = 真实产品目录（backend/catalog.py）；价格是模拟的，不是真实进价/售价
+_price_rng = random.Random(SEED + 1)
 PRODUCTS = [
-    ("GH-FG-1G", "General Hydroponics", "FloraGro", "1 gal", 4, 3200, 4600, "S01", "Flora Gro|FG|三元A|生长液"),
-    ("GH-FM-1G", "General Hydroponics", "FloraMicro", "1 gal", 4, 3200, 4600, "S01", "Flora Micro|FM|三元B|微量元素"),
-    ("GH-FB-1G", "General Hydroponics", "FloraBloom", "1 gal", 4, 3200, 4600, "S01", "Flora Bloom|FB|三元C|开花液"),
-    ("GH-FG-1Q", "General Hydroponics", "FloraGro", "1 qt", 12, 2700, 3900, "S01", "FloraGro小瓶|FG 1qt"),
-    ("GH-FM-1Q", "General Hydroponics", "FloraMicro", "1 qt", 12, 2700, 3900, "S01", "FloraMicro小瓶|FM 1qt"),
-    ("GH-FB-1Q", "General Hydroponics", "FloraBloom", "1 qt", 12, 2700, 3900, "S01", "FloraBloom小瓶|FB 1qt"),
-    ("GH-CMG-1G", "General Hydroponics", "CALiMAGic", "1 gal", 4, 3600, 5200, "S01", "Cal-Mag|CalMag|钙镁|แคลแมก"),
-    ("GH-MB-2.2LB", "General Hydroponics", "Monster Bloom", "2.2 lb", 6, 5400, 7800, "S01", "MB|Monster|开花粉|มอนสเตอร์"),
-    ("GH-KB-1Q", "General Hydroponics", "Liquid KoolBloom", "1 qt", 12, 4200, 6000, "S01", "KoolBloom|Kool Bloom|KB|酷开花"),
-    ("GH-AS-1Q", "General Hydroponics", "Armor Si", "1 qt", 12, 3000, 4300, "S01", "Armor Si|硅|ซิลิก้า"),
-    ("GH-RS-1Q", "General Hydroponics", "RapidStart", "1 qt", 12, 5600, 8000, "S01", "Rapid Start|生根液|เร่งราก"),
-    ("GH-FLP-1Q", "General Hydroponics", "Floralicious Plus", "1 qt", 12, 4800, 6900, "S01", "Floralicious|FL+"),
-    ("GH-PHU-1Q", "General Hydroponics", "pH Up", "1 qt", 12, 1800, 2600, "S01", "pH Up|调高|pH上"),
-    ("GH-PHD-1Q", "General Hydroponics", "pH Down", "1 qt", 12, 1800, 2600, "S01", "pH Down|调低|pH下"),
-    ("AN-BB-1L", "Advanced Nutrients", "Big Bud", "1 L", 12, 6000, 8400, "S02", "BigBud|BB|大花"),
+    (sku, brand, name, size, 1, None, _price_rng.randrange(2500, 20000, 100), "S01", "|".join(aliases))
+    for sku, name, size, brand, aliases in CATALOG
 ]
+PRODUCTS = [(p[0], p[1], p[2], p[3], p[4], round(p[6] * 0.62), p[6], p[7], p[8]) for p in PRODUCTS]
 
 # 最近没有及时补货的 SKU（演示补货提醒）：从这一天起不再给它们下采购单
-STOP_REORDER = {"GH-MB-2.2LB": date(2026, 8, 20), "GH-CMG-1G": date(2026, 9, 1), "GH-KB-1Q": date(2026, 8, 25)}
+STOP_REORDER = {"GROTEK-MONSTER-BLOOM": date(2026, 7, 20), "BOTANICARE-CALMAG-PLUS-6GAL": date(2026, 8, 1),
+                "AN-BIG-BUD": date(2026, 7, 25)}
 
 REGIONS = ["Bangkok", "Bangkok", "Bangkok", "Nonthaburi", "Chiang Mai", "Chiang Mai", "Phuket",
            "Pattaya", "Khon Kaen", "Hua Hin", "Udon Thani", "Nakhon Ratchasima"]
 TYPE_WEIGHTS = [("grow_shop", 0.45), ("farm", 0.25), ("reseller", 0.15), ("retail", 0.15)]
 DISCOUNT = {"reseller": 0.85, "grow_shop": 0.92, "farm": 0.95, "retail": 1.0}
-SIZE = {"reseller": (6, 14), "grow_shop": (2, 6), "farm": (2, 5), "retail": (1, 2)}  # 每个 SKU 每单的箱数范围
+SIZE = {"reseller": (6, 14), "grow_shop": (2, 6), "farm": (2, 5), "retail": (1, 2)}  # 每个 SKU 每单的数量范围
 CYCLE = {"reseller": (14, 28), "grow_shop": (18, 35), "farm": (25, 45), "retail": (30, 60)}
 
 NAME_A = ["Green", "Siam", "Lotus", "Jungle", "Tropic", "Canopy", "River", "Golden", "Lanna", "Andaman",
@@ -73,14 +63,14 @@ N_CUSTOMERS = 40
 N_DORMANT = 6
 N_NEW = 3
 
-# 典型购物篮：一套 Flora 三件 + 几个添加剂
+# 典型购物篮（按真实销售报告里常见的组合）
 BASKETS = [
-    ["GH-FG-1G", "GH-FM-1G", "GH-FB-1G", "GH-CMG-1G"],
-    ["GH-FG-1G", "GH-FM-1G", "GH-FB-1G", "GH-MB-2.2LB", "GH-KB-1Q"],
-    ["GH-FG-1Q", "GH-FM-1Q", "GH-FB-1Q", "GH-PHD-1Q"],
-    ["GH-MB-2.2LB", "GH-CMG-1G", "AN-BB-1L"],
-    ["GH-CMG-1G", "GH-AS-1Q", "GH-RS-1Q", "GH-FLP-1Q"],
-    ["GH-FB-1G", "GH-MB-2.2LB", "GH-KB-1Q", "GH-PHD-1Q", "GH-PHU-1Q"],
+    ["ATH-PRO-BLOOM-25LB", "ATH-PRO-CORE-25LB", "ATH-PRO-GROW-25LB", "ATH-FADE-5G"],
+    ["ATH-PRO-BLOOM-25LB", "ATH-PRO-CORE-25LB", "ATH-CLEANSE-5G", "ATH-BALANCE-25LB"],
+    ["FP-GROW-25LB", "FP-BLOOM-25LB", "FP-CAMICRO-25LB", "FP-LATEBLOOM-25LB"],
+    ["AN-BIG-BUD", "BOTANICARE-CALMAG-PLUS-6GAL", "GO-BIOROOT-6GAL", "GROTEK-WEIGHTMAX"],
+    ["GROTEK-MONSTER-BLOOM", "AN-OVERDRIVE-6GAL", "AN-BUD-CANDY", "CYCO-SUPA-STIKY-5G"],
+    ["GROTEK-MONSTER-BLOOM", "GH-FLORALICIOUS-PLUS-6GAL", "GH-KOOLBLOOM-6GAL", "SUPERTHRIVE-PRO-TEKT"],
 ]
 
 
@@ -237,7 +227,7 @@ def main() -> None:
         "products",
         ["sku", "brand", "name", "size", "unit", "cost_usd", "freight_usd", "price_usd", "floor_price_usd",
          "safety_stock", "lead_time_days", "supplier_id", "aliases", "active"],
-        [(p[0], p[1], p[2], p[3], "case", usd(p[5]), 0, usd(p[6]), usd(p[6] * 0.93), safety[p[0]], lead[p[7]], p[7],
+        [(p[0], p[1], p[2], p[3], "case", usd(p[5]), 0, usd(p[6]), usd(p[6] * 0.6), safety[p[0]], lead[p[7]], p[7],
           p[8], 1) for p in PRODUCTS],
     )
     write_csv(

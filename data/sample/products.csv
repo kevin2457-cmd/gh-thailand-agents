@@ -1,16 +1,45 @@
 sku,brand,name,size,unit,cost_usd,freight_usd,price_usd,floor_price_usd,safety_stock,lead_time_days,supplier_id,aliases,active
-GH-FG-1G,General Hydroponics,FloraGro,1 gal,case,91.43,0,131.43,122.23,39,35,S01,Flora Gro|FG|三元A|生长液,1
-GH-FM-1G,General Hydroponics,FloraMicro,1 gal,case,91.43,0,131.43,122.23,36,35,S01,Flora Micro|FM|三元B|微量元素,1
-GH-FB-1G,General Hydroponics,FloraBloom,1 gal,case,91.43,0,131.43,122.23,36,35,S01,Flora Bloom|FB|三元C|开花液,1
-GH-FG-1Q,General Hydroponics,FloraGro,1 qt,case,77.14,0,111.43,103.63,23,35,S01,FloraGro小瓶|FG 1qt,1
-GH-FM-1Q,General Hydroponics,FloraMicro,1 qt,case,77.14,0,111.43,103.63,21,35,S01,FloraMicro小瓶|FM 1qt,1
-GH-FB-1Q,General Hydroponics,FloraBloom,1 qt,case,77.14,0,111.43,103.63,17,35,S01,FloraBloom小瓶|FB 1qt,1
-GH-CMG-1G,General Hydroponics,CALiMAGic,1 gal,case,102.86,0,148.57,138.17,32,35,S01,Cal-Mag|CalMag|钙镁|แคลแมก,1
-GH-MB-2.2LB,General Hydroponics,Monster Bloom,2.2 lb,case,154.29,0,222.86,207.26,32,35,S01,MB|Monster|开花粉|มอนสเตอร์,1
-GH-KB-1Q,General Hydroponics,Liquid KoolBloom,1 qt,case,120.0,0,171.43,159.43,23,35,S01,KoolBloom|Kool Bloom|KB|酷开花,1
-GH-AS-1Q,General Hydroponics,Armor Si,1 qt,case,85.71,0,122.86,114.26,7,35,S01,Armor Si|硅|ซิลิก้า,1
-GH-RS-1Q,General Hydroponics,RapidStart,1 qt,case,160.0,0,228.57,212.57,7,35,S01,Rapid Start|生根液|เร่งราก,1
-GH-FLP-1Q,General Hydroponics,Floralicious Plus,1 qt,case,137.14,0,197.14,183.34,14,35,S01,Floralicious|FL+,1
-GH-PHU-1Q,General Hydroponics,pH Up,1 qt,case,51.43,0,74.29,69.09,5,35,S01,pH Up|调高|pH上,1
-GH-PHD-1Q,General Hydroponics,pH Down,1 qt,case,51.43,0,74.29,69.09,18,35,S01,pH Down|调低|pH下,1
-AN-BB-1L,Advanced Nutrients,Big Bud,1 L,case,171.43,0,240.0,223.2,8,21,S02,BigBud|BB|大花,1
+FP-GROW-25LB,General Hydroponics,FloraPro Grow,25lb,case,109.83,0,177.14,106.29,18,60,S01,GH-Grow-25lb|绿色粉|绿粉|绿色粉 Grow,1
+FP-BLOOM-25LB,General Hydroponics,FloraPro Bloom,25lb,case,184.23,0,297.14,178.29,20,60,S01,GH-Bloom-25lb|红色粉|红粉|红 Bloom|红色粉 Bloom|FloraBloom,1
+FP-CAMICRO-25LB,General Hydroponics,FloraPro Calcium + Micros,25lb,case,51.37,0,82.86,49.71,18,60,S01,GH-Core-25lb|GH-Micro-25lb|FloraPro Calcium Micros|黑色粉|黑粉|黑 Micro|黑色 Micro,1
+FP-LATEBLOOM-25LB,General Hydroponics,FloraPro Late Bloom,25lb,case,193.09,0,311.43,186.86,18,60,S01,GH-Late-25lb|Late Bloom|红 Late Bloom,1
+ATH-PRO-GROW-25LB,Athena,Athena Pro Grow,25lb,case,85.03,0,137.14,82.29,18,60,S01,Pro-Grow-25lb|Pro Grow,1
+ATH-PRO-BLOOM-25LB,Athena,Athena Pro Bloom,25lb,case,178.91,0,288.57,173.14,36,60,S01,Pro-Bloom-25lb|Pro Bloom,1
+ATH-PRO-CORE-25LB,Athena,Athena Pro Core,25lb,case,347.2,0,560.0,336.0,36,60,S01,Pro-Core-25lb|Pro Core,1
+ATH-BALANCE-25LB,Athena,Athena Pro Balance,25lb,case,253.31,0,408.57,245.14,19,60,S01,Balance 25lb|Balance powder,1
+ATH-CLEANSE-5G,Athena,Athena Cleanse,5G,case,138.17,0,222.86,133.71,18,60,S01,Cleanse 5G|Cleanse-5Gallon,1
+ATH-FADE-5G,Athena,Athena Fade,5G,case,132.86,0,214.29,128.57,16,60,S01,Fade 5G|Fade-5Gallon,1
+ATH-CUTS-14OZ,Athena,Athena Cuts,14oz,case,120.46,0,194.29,116.57,5,60,S01,Cuts-14OZ|Cuts 14oz|Cuts,1
+TRISHIELD-1G,General Hydroponics,Trishield,1G,case,116.91,0,188.57,113.14,5,60,S01,Trishield 1G|Trishield 1 gal,1
+TRISHIELD-5G,General Hydroponics,Trishield,5G,case,258.63,0,417.14,250.29,5,60,S01,Trishield 5G,1
+GREEN-JUICE-1L,,Green Juice,1L,case,65.54,0,105.71,63.43,5,60,S01,Green Juice|Green J - 1L,1
+PH-UP,Advanced Nutrients,pH Up,,case,191.31,0,308.57,185.14,5,60,S01,PH UP|PH UP Advance,1
+PH-DOWN,Advanced Nutrients,pH Down,,case,148.8,0,240.0,144.0,5,60,S01,PH Down|PH Down Advance,1
+AN-CARBOLOAD,Advanced Nutrients,Carboload,,case,230.29,0,371.43,222.86,5,60,S01,Carboload,1
+AN-OVERDRIVE-6GAL,Advanced Nutrients,Overdrive,6gal,case,352.51,0,568.57,341.14,6,60,S01,Overdrive|Overdrive 6 gal,1
+AN-BIG-BUD,Advanced Nutrients,Big Bud,,case,248.0,0,400.0,240.0,6,60,S01,Big Bud|Bigbud,1
+AN-B52,Advanced Nutrients,B-52,,case,88.57,0,142.86,85.71,5,60,S01,B52|B 52,1
+AN-BUD-CANDY,Advanced Nutrients,Bud Candy,,case,290.51,0,468.57,281.14,7,60,S01,Bud Candy|棉花糖,1
+CLONEX-1L,Growth Technology,CloneX,1L,case,113.37,0,182.86,109.71,5,60,S01,CloneX|CloneX 1 Gal|CloneX GEL - 1L|CloneX Gel,1
+ORIGINAL-1L,,Original Liquid Plant Fertilizer,1L,case,297.6,0,480.0,288.0,5,60,S01,Original - 1L|Original,1
+GH-KOOLBLOOM-6GAL,General Hydroponics,Liquid KoolBloom,6gal,case,253.31,0,408.57,245.14,5,60,S01,Koolbloom|Liquid Koolbloom|Liquid Kool bloom 6 gal|Koolbloom 液体|Koolbloom 6gal,1
+GH-KOOLBLOOM-16LB,General Hydroponics,Dry KoolBloom,16lb,case,148.8,0,240.0,144.0,5,60,S01,Koolbloom 粉 16lb|Koolbloom 粉|Dry Koolbloom,1
+CYCO-SUPA-STIKY-5G,Cyco,Cyco Supa Stiky,5G,case,124.0,0,200.0,120.0,9,60,S01,Cyco Supa Sticky|Supa Sticky|(CYCO) supa sticky 5 gal|Cyco 糖,1
+GROTEK-MONSTER-BLOOM,Grotek,Monster Bloom,,case,226.74,0,365.71,219.43,9,60,S01,Monster Bloom|紫粉|三朵花,1
+GROTEK-WEIGHTMAX,Grotek,WeightMax,,case,294.06,0,474.29,284.57,7,60,S01,Weight Max|WeightMax|Weight Max 10kg|鸦片粉,1
+BOTANICARE-CALMAG-PLUS-6GAL,Botanicare,Cal-Mag Plus,6gal,case,46.06,0,74.29,44.57,7,60,S01,Cal Mg Plus|Cal Mg|Cal mag|Cal Mag|番茄|番茄水,1
+GO-BIOROOT-6GAL,General Organics,BioRoot,6gal,case,85.03,0,137.14,82.29,10,60,S01,Bioroot|Bio root|Bio root 6 gal|Biroot|根水,1
+GH-FLORALICIOUS-PLUS-6GAL,General Hydroponics,Floralicious Plus,6gal,case,255.09,0,411.43,246.86,5,60,S01,Floralicious 6 gal|Floralicious 6gal,1
+GH-FLORALICIOUS-PLUS-1GAL,General Hydroponics,Floralicious Plus,1gal,case,178.91,0,288.57,173.14,5,60,S01,Floralicious 1 gal|Floralicious 1gal,1
+SUPERTHRIVE-PRO-TEKT,SUPERthrive,Pro-TeKt,,case,301.14,0,485.71,291.43,8,60,S01,Pro-Tekt|Pro Tekt|Pro tskt,1
+ZEROTOL-2.5G,BioSafe Systems,ZeroTol 2.0,2.5G,case,329.49,0,531.43,318.86,5,60,S01,Zero 2.5G|Zero|ZeroTol,1
+SANIDATE-5G,BioSafe Systems,SaniDate 5.0,5G,case,235.6,0,380.0,228.0,5,60,S01,SanDate 5G|SanDate|SaniDate,1
+TERPINATOR,,Terpinator,,case,232.06,0,374.29,224.57,5,60,S01,Terpinator,1
+EMERALD,,Emerald,,case,102.74,0,165.71,99.43,5,60,S01,Emerald,1
+BIG-TIME-ENZYME,Big Time Hydroponics,Big Time Enzyme,,case,86.8,0,140.0,84.0,5,60,S01,Big time enzyme,1
+BOTANICARE-SILICA-BLAST,Botanicare,Silica Blast,,case,173.6,0,280.0,168.0,5,60,S01,Silica blast,1
+GH-DIAMOND-NECTAR,General Hydroponics,Diamond Nectar,,case,203.71,0,328.57,197.14,5,60,S01,Diamond nectar,1
+GH-TRUEFLO,General Hydroponics,TrueFlo,,case,262.17,0,422.86,253.71,5,60,S01,True flo|TrueFlo,1
+BLOOM-LIQUID-PLANT-FOOD,Dyna-Gro,Bloom Liquid Plant Food,,case,251.54,0,405.71,243.43,5,60,S01,Bloom liquid plant food,1
+BUSH-LOAD,Wet Inc,Bush Load,1qt,case,286.97,0,462.86,277.71,5,60,S01,Bush load,1
+CYCO-SILICA-5G,Cyco,Cyco Silica,5G,case,157.66,0,254.29,152.57,5,60,S01,CYCO ( silica ) 5 gal|Cyco silica,1

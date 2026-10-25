@@ -56,15 +56,16 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
     ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "紫粉", "三朵花"]),
     # 老板确认：同名的都是同规格，盘点里的 Weight Max 10kg 合并进来
     ("GROTEK-WEIGHTMAX", "WeightMax", "", "Grotek", ["Weight Max", "WeightMax", "Weight Max 10kg", "鸦片粉"]),
-    ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag", "番茄"]),
-    ("GO-BIOROOT-6GAL", "BioRoot", "6gal", "General Organics", ["Bioroot", "Bio root", "Bio root 6 gal"]),
+    ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag", "Cal Mag", "番茄", "番茄水"]),
+    # 根水：聊天截图里 客户C 群 "Bioroot 3桶 3*280" 和客户A群 "根水 3 3*280" 同价，按 BioRoot 处理（待老板最后确认）
+    ("GO-BIOROOT-6GAL", "BioRoot", "6gal", "General Organics", ["Bioroot", "Bio root", "Bio root 6 gal", "Biroot", "根水"]),
     # 老板确认：Floralicious 有 6gal 和 1gal 两种（没有 2.5gal）。采购 Excel 里的是最大规格 6gal；
     # 1gal 是早期货柜进的。只写 "Floralicious" 或 "香味" 有歧义，要问清规格
     ("GH-FLORALICIOUS-PLUS-6GAL", "Floralicious Plus", "6gal", "General Hydroponics",
      ["Floralicious 6 gal", "Floralicious 6gal"]),
     ("GH-FLORALICIOUS-PLUS-1GAL", "Floralicious Plus", "1gal", "General Hydroponics",
      ["Floralicious 1 gal", "Floralicious 1gal"]),
-    ("SUPERTHRIVE-PRO-TEKT", "Pro-TeKt", "", "SUPERthrive", ["Pro-Tekt", "Pro Tekt"]),
+    ("SUPERTHRIVE-PRO-TEKT", "Pro-TeKt", "", "SUPERthrive", ["Pro-Tekt", "Pro Tekt", "Pro tskt"]),
     ("ZEROTOL-2.5G", "ZeroTol 2.0", "2.5G", "BioSafe Systems", ["Zero 2.5G", "Zero", "ZeroTol"]),
     ("SANIDATE-5G", "SaniDate 5.0", "5G", "BioSafe Systems", ["SanDate 5G", "SanDate", "SaniDate"]),
     ("TERPINATOR", "Terpinator", "", "", ["Terpinator"]),

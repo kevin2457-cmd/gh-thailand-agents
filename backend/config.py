@@ -26,6 +26,17 @@ for _env in ENV_FILES:
 MODEL_NAME = "gpt-6-luna"
 PORTKEY_BASE_URL = "https://api.portkey.ai/v1"
 
+# 价格（每百万 token，美元），来自 MGT 409 Lecture 11 的 OpenAI 标准价
+PRICES_PER_1M = {"input": 0.10, "cached_input": 0.01, "cache_write": 0.125, "output": 0.50}
+
+# 汇率：按老板聊天记录里的实际折算（2310 美金 = 76500 泰铢；1778 美金 = 11960 人民币）
+FX_TO_USD = {"USD": 1.0, "USDT": 1.0, "THB": 1 / 33.1, "CNY": 1 / 6.73}
+
+# 客户代号：历史订单没记客户时用这个，不进客户分析
+UNLABELED_CODE = "UNLABELED"
+
+PROMPTS_DIR = ROOT_DIR / "prompts"
+
 # 课程要求 .env 里只能有 PORTKEY_API_KEY / OPENAI_API_KEY，所以数据源用命令行参数 --source 切换，不放进 .env
 DEFAULT_DATA_SOURCE = "sample"
 

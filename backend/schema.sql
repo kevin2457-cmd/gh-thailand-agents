@@ -37,6 +37,7 @@ CREATE TABLE products (
 );
 
 -- 客户。code 是发给模型时用的代号；name/phone/address 是隐私字段，永远不发给模型。
+-- code = 'UNLABELED' 的是"未标注客户"（历史订单没记客户），只算销量，不进客户分析。
 CREATE TABLE customers (
     id            TEXT PRIMARY KEY,              -- 例如 C001
     code          TEXT NOT NULL UNIQUE,          -- 例如 CUST-001
@@ -57,11 +58,15 @@ CREATE TABLE sales (
     note          TEXT
 );
 
+-- 真实订单里价格有泰铢、美元、人民币、USDT，还有 5 折、7 折：原样记下，另存一份折算成美元的实收单价
 CREATE TABLE sale_items (
-    sale_id     TEXT NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
-    sku         TEXT NOT NULL REFERENCES products(sku),
-    qty         INTEGER NOT NULL CHECK (qty > 0),
-    unit_price  REAL NOT NULL CHECK (unit_price >= 0),
+    sale_id         TEXT NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+    sku             TEXT NOT NULL REFERENCES products(sku),
+    qty             INTEGER NOT NULL CHECK (qty > 0),
+    unit_price      REAL NOT NULL CHECK (unit_price >= 0),          -- 报价单价（折扣前，原币种）
+    currency        TEXT NOT NULL DEFAULT 'USD' CHECK (currency IN ('USD', 'THB', 'CNY', 'USDT')),
+    discount        REAL NOT NULL DEFAULT 1 CHECK (discount > 0 AND discount <= 1),  -- 0.5 = 5 折
+    unit_price_usd  REAL,                                           -- 实收单价（折后，美元）；NULL 时等于 unit_price
     PRIMARY KEY (sale_id, sku)
 );
 
@@ -158,7 +163,7 @@ GROUP BY pi.sku;
 -- 每张销售单的总额
 CREATE VIEW v_sale_totals AS
 SELECT s.id AS sale_id, s.sale_date, s.customer_id,
-       SUM(si.qty) AS total_qty, SUM(si.qty * si.unit_price) AS total_usd
+       SUM(si.qty) AS total_qty, SUM(si.qty * COALESCE(si.unit_price_usd, si.unit_price)) AS total_usd
 FROM sales s
 JOIN sale_items si ON si.sale_id = s.id
 GROUP BY s.id;

@@ -1,0 +1,285 @@
+{
+  "intake": {
+    "pending_id": 1,
+    "draft": {
+      "order_date": "2026-10-05",
+      "lines": [
+        {
+          "product_text": "绿色粉",
+          "sku": "FP-GROW-25LB",
+          "qty": 5,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 360.0
+        },
+        {
+          "product_text": "黑色粉",
+          "sku": "FP-CAMICRO-25LB",
+          "qty": 15,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 1800.0
+        },
+        {
+          "product_text": "红色粉",
+          "sku": "FP-BLOOM-25LB",
+          "qty": 10,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 1200.0
+        },
+        {
+          "product_text": "Big bud",
+          "sku": "AN-BIG-BUD",
+          "qty": 1,
+          "unit_price": null,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 600.0
+        },
+        {
+          "product_text": "番茄水",
+          "sku": "BOTANICARE-CALMAG-PLUS-6GAL",
+          "qty": 1,
+          "unit_price": null,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 220.0
+        }
+      ],
+      "stated_total": 2633.4,
+      "stated_total_currency": "USD",
+      "notes": "运费到付；另注明折合88700泰铢。",
+      "questions": [
+        "绿色粉写明数量5，但公式为120*3=360；请确认应按数量5还是公式中的3计算。",
+        "折扣标题写“三色（63折）”，但总计将全部4180按0.63计算；请确认Big bud和番茄水是否也适用63折。"
+      ],
+      "suspicious_instructions": []
+    },
+    "checked": {
+      "order_date": "2026-10-05",
+      "lines": [
+        {
+          "product_text": "绿色粉",
+          "sku": "FP-GROW-25LB",
+          "qty": 5,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 360.0,
+          "candidates": [
+            "FP-GROW-25LB"
+          ],
+          "warnings": [
+            "math"
+          ],
+          "unit_price_usd": 75.6
+        },
+        {
+          "product_text": "黑色粉",
+          "sku": "FP-CAMICRO-25LB",
+          "qty": 15,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 1800.0,
+          "candidates": [
+            "FP-CAMICRO-25LB"
+          ],
+          "warnings": [],
+          "unit_price_usd": 75.6
+        },
+        {
+          "product_text": "红色粉",
+          "sku": "FP-BLOOM-25LB",
+          "qty": 10,
+          "unit_price": 120.0,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 1200.0,
+          "candidates": [
+            "FP-BLOOM-25LB"
+          ],
+          "warnings": [],
+          "unit_price_usd": 75.6
+        },
+        {
+          "product_text": "Big bud",
+          "sku": "AN-BIG-BUD",
+          "qty": 1,
+          "unit_price": null,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 600.0,
+          "candidates": [
+            "AN-BIG-BUD"
+          ],
+          "warnings": []
+        },
+        {
+          "product_text": "番茄水",
+          "sku": "BOTANICARE-CALMAG-PLUS-6GAL",
+          "qty": 1,
+          "unit_price": null,
+          "currency": "USD",
+          "discount": 0.63,
+          "line_total_stated": 220.0,
+          "candidates": [
+            "BOTANICARE-CALMAG-PLUS-6GAL"
+          ],
+          "warnings": []
+        }
+      ],
+      "warnings": [
+        "「绿色粉」算式不对：5 × 120 = 600.00（折后 378.00），订单写的是 360.00",
+        "「绿色粉」实收 $75.60，低于底价 $106.29",
+        "「红色粉」实收 $75.60，低于底价 $178.29",
+        "「Big bud」没有单价",
+        "「番茄水」没有单价",
+        "BOTANICARE-CALMAG-PLUS-6GAL 库存只有 0，这单要 1",
+        "录单 agent 的疑问：绿色粉写明数量5，但公式为120*3=360；请确认应按数量5还是公式中的3计算。",
+        "录单 agent 的疑问：折扣标题写“三色（63折）”，但总计将全部4180按0.63计算；请确认Big bud和番茄水是否也适用63折。"
+      ],
+      "blocking": []
+    },
+    "redacted_text": "10月5日 订单统计：\n三色（63折）\n绿色粉5：120*3=360\n黑色粉15：120*15=1800\n红色粉：10*120=1200\nBig bud：600\n番茄水：220\n合计：4180*0.63=2633.4美金\n折合：88700泰铢\n运费到付",
+    "trace": [
+      {
+        "agent": "intake",
+        "tool": "lookup_product",
+        "args": {
+          "product_text": "绿色粉"
+        },
+        "result": "{\"sku\": \"FP-GROW-25LB\"}"
+      },
+      {
+        "agent": "intake",
+        "tool": "lookup_product",
+        "args": {
+          "product_text": "黑色粉"
+        },
+        "result": "{\"sku\": \"FP-CAMICRO-25LB\"}"
+      },
+      {
+        "agent": "intake",
+        "tool": "lookup_product",
+        "args": {
+          "product_text": "红色粉"
+        },
+        "result": "{\"sku\": \"FP-BLOOM-25LB\"}"
+      },
+      {
+        "agent": "intake",
+        "tool": "lookup_product",
+        "args": {
+          "product_text": "Big bud"
+        },
+        "result": "{\"sku\": \"AN-BIG-BUD\"}"
+      },
+      {
+        "agent": "intake",
+        "tool": "lookup_product",
+        "args": {
+          "product_text": "番茄水"
+        },
+        "result": "{\"sku\": \"BOTANICARE-CALMAG-PLUS-6GAL\"}"
+      }
+    ],
+    "usage": {
+      "run_id": "intake-2026-10-24-4e9cb7fa",
+      "total": {
+        "requests": 2,
+        "input_tokens": 6149,
+        "cached_tokens": 2844,
+        "output_tokens": 1108,
+        "cost_usd": 0.0009129400000000001
+      },
+      "per_agent": {
+        "intake": {
+          "requests": 2,
+          "input_tokens": 6149,
+          "cached_tokens": 2844,
+          "output_tokens": 1108,
+          "cost_usd": 0.0009129400000000001
+        }
+      }
+    }
+  },
+  "ask": {
+    "answer": "**需要马上补货：**\n- **Cal-Mag Plus（6gal）**：现货 **0**，在途 **0**，已缺货；建议下单日期：**2026-08-13**。\n- **Big Bud**：现货 **5**，在途 **0**，库存覆盖 **-1.9 天**；建议下单日期：**2026-08-23**。\n\n其他建议补货的产品：\n- **Floralicious Plus（6gal）**：现货 **13**；建议下单日期：**2026-10-08**。\n- **Liquid KoolBloom（6gal）**：现货 **11**；建议下单日期：**2026-10-08**。\n\n**久未下单的老客户：**CUST-006（118天）、CUST-004（115天）、CUST-039（95天）、CUST-038（94天）、CUST-001（70天）、CUST-005（63天）。最久未下单的是 **CUST-006**。\n\n**给 CUST-006 的跟进话术：**  \n你好呀，最近还需要 BioRoot、Cyco Supa Stiky 或 FloraPro Late Bloom 吗？如果快要用完了，欢迎告诉我是否需要补货。",
+    "trace": [
+      {
+        "agent": "inventory",
+        "tool": "get_reorder_report",
+        "args": {},
+        "result": "[{\"sku\": \"BOTANICARE-CALMAG-PLUS-6GAL\", \"name\": \"Cal-Mag Plus\", \"size\": \"6gal\", \"on_hand\": 0, \"in_transit\": 0, \"next_arrival\": null, \"daily_rate\": 0.6, \"safety_used\": 7, \"days_of_cover\": -11.7, \"order_by\": \"2026-08-13\", \"status\": \"out_of_stock\", \"stockout_before_arrival\": false}, {\"sku\": \"AN-BIG-BUD\", \"name\": \"Big Bud\", \"size\": \"\", \"on_hand\": 5, \"in_transit\": 0, \"next_arrival\": null, \"daily_rate\": 0.53, \"safety_used\": 6, \"days_of_cover\": -1.9, \"order_by\": \"2026-08-23\", \"status\": \"order_now\", \"stockout_before_arrival\": false}, {\"sku\": \"GH-FLORALICIOUS-PLUS-6GAL\", \"name\": \"Floralicious Plus\", \"s…"
+      },
+      {
+        "agent": "orchestrator",
+        "tool": "ask_inventory_agent",
+        "args": {
+          "question": "哪些产品需要马上补货？请列出需要立即补货的产品及相关库存/建议补货信息。"
+        },
+        "result": "\"需立即补货（含已缺货及“现在下单”）：\\n\\n- **Cal-Mag Plus（6gal）**：现货 **0**，在途 **0**；日销 **0.6**，安全库存 **7**；已缺货。建议下单日期：**2026-08-13**。报告未标记为到货前会断货。\\n- **Big Bud**：现货 **5**，在途 **0**；日销 **0.53**，安全库存 **6**；库存覆盖 **-1.9 天**。建议下单日期：**2026-08-23**。\\n- **Floralicious Plus（6gal）**：现货 **13**，在途 **0**；日销 **0.17**，安全库存 **5**；库存覆盖 **45.7 天**。建议下单日期：**2026-10-08**。\\n- **Liquid KoolBloom（6gal）**：现货 **11**，在途 **0**；日销 **0.13**，安全库存 **5**；库存覆盖 **45.0 天**。建议下单日期：**2026-10-08**。\\n\\n报告未提供建议订购数量，因此这里只列出补货时点和库存信息。\""
+      },
+      {
+        "agent": "crm",
+        "tool": "get_dormant_customers",
+        "args": {},
+        "result": "[{\"customer\": \"CUST-006\", \"orders\": 9, \"avg_gap_days\": 29.1, \"days_since_last\": 118, \"overdue_ratio\": 4.1, \"last_order\": \"2026-06-27\", \"usual_products\": [{\"sku\": \"GO-BIOROOT-6GAL\", \"name\": \"BioRoot\", \"qty\": 39}, {\"sku\": \"CYCO-SUPA-STIKY-5G\", \"name\": \"Cyco Supa Stiky\", \"qty\": 36}, {\"sku\": \"FP-LATEBLOOM-25LB\", \"name\": \"FloraPro Late Bloom\", \"qty\": 35}]}, {\"customer\": \"CUST-038\", \"orders\": 12, \"avg_gap_days\": 24.5, \"days_since_last\": 94, \"overdue_ratio\": 3.8, \"last_order\": \"2026-07-21\", \"usual_products\": [{\"sku\": \"ATH-PRO-GROW-25LB\", \"name\": \"Athena Pro Grow\", \"qty\": 49}, {\"sku\": \"ATH-PRO-BLOOM-2…"
+      },
+      {
+        "agent": "crm",
+        "tool": "get_customer_history",
+        "args": {
+          "customer_code": "CUST-006"
+        },
+        "result": "{\"customer\": \"CUST-006\", \"region\": \"Nakhon Ratchasima\", \"type\": \"grow_shop\", \"recent_orders\": [{\"id\": \"SO-000326\", \"sale_date\": \"2026-06-27\", \"total_qty\": 24, \"total_usd\": 6447.89}, {\"id\": \"SO-000290\", \"sale_date\": \"2026-06-03\", \"total_qty\": 15, \"total_usd\": 4071.65}, {\"id\": \"SO-000246\", \"sale_date\": \"2026-05-01\", \"total_qty\": 20, \"total_usd\": 5919.54}, {\"id\": \"SO-000209\", \"sale_date\": \"2026-03-31\", \"total_qty\": 15, \"total_usd\": 4345.05}, {\"id\": \"SO-000182\", \"sale_date\": \"2026-03-07\", \"total_qty\": 26, \"total_usd\": 7562.41}, {\"id\": \"SO-000139\", \"sale_date\": \"2026-02-04\", \"total_qty\": 20, \"total…"
+      },
+      {
+        "agent": "orchestrator",
+        "tool": "ask_crm_agent",
+        "args": {
+          "question": "哪些老客户很久没下单了？请列出久未下单客户并指出最久没下单的那位；同时为该客户写一条合适的跟进话术。"
+        },
+        "result": "\"久未下单客户（距上次下单天数）：\\n- CUST-006：118天\\n- CUST-004：115天\\n- CUST-039：95天\\n- CUST-038：94天\\n- CUST-001：70天\\n- CUST-005：63天\\n\\n最久未下单的是 **CUST-006**。\\n\\n跟进话术：你好呀，最近还需要 BioRoot、Cyco Supa Stiky 或 FloraPro Late Bloom 吗？如果快要用完了，欢迎告诉我是否需要补货。\""
+      }
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-a15f5721",
+      "total": {
+        "requests": 7,
+        "input_tokens": 8404,
+        "cached_tokens": 1051,
+        "output_tokens": 1156,
+        "cost_usd": 0.00132381
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 1137,
+          "cached_tokens": 0,
+          "output_tokens": 507,
+          "cost_usd": 0.0003672
+        },
+        "inventory": {
+          "requests": 2,
+          "input_tokens": 4372,
+          "cached_tokens": 0,
+          "output_tokens": 397,
+          "cost_usd": 0.0006357
+        },
+        "crm": {
+          "requests": 3,
+          "input_tokens": 2895,
+          "cached_tokens": 1051,
+          "output_tokens": 252,
+          "cost_usd": 0.00032091
+        }
+      }
+    }
+  }
+}
