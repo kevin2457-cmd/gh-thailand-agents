@@ -182,3 +182,5 @@
 > 遇到了一个新的SKU，叫IPM，是一个Athena品牌的杀虫剂，可以加上去吗？否则我也没办法录入（5G；售价18000泰铢，底价14400泰铢；就叫 IPM；库存先记 0）
 
 > 最后确认一下，是否满足老师所有要求，https://zlisto.github.io/mgt_409_fa26/project_requirements.html。都满足了就提交了
+
+> 用老账户（推送到 kevin2457-cmd 下新建的仓库）
