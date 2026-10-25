@@ -162,7 +162,8 @@ def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, toda
                 warnings.append(f"「{ln.product_text}」实收 ${unit_usd:,.2f}，低于底价 ${products[sku]['floor_price_usd']:,.2f}")
 
         if sku and (opening.get(sku) is None or order_date > opening[sku]) and ln.qty > stock.get(sku, 0):
-            warnings.append(f"{sku} 库存只有 {stock.get(sku, 0)}，这单要 {ln.qty}")
+            # 库存不够时不能批准（否则库存变负数）：老板要先核对实物库存或修改数量
+            blocking.append(f"{sku} 库存只有 {stock.get(sku, 0)}，这单要 {ln.qty}：请先核对库存或修改数量")
         lines.append(line)
 
     # 总计核对

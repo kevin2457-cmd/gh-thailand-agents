@@ -6,9 +6,17 @@ load_dotenv 默认不覆盖已设置的变量，所以仓库文件夹里的值�
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+# Windows 控制台（尤其是输出被重定向时）默认用 cp1252，打印中文会报错：统一改成 UTF-8
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"

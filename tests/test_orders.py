@@ -106,6 +106,12 @@ def test_sale_before_stocktake_does_not_move_stock(conn):
     assert conn.execute("SELECT COUNT(*) FROM stock_moves").fetchone()[0] == before
 
 
+def test_not_enough_stock_blocks_approval(conn):
+    d = draft({"product_text": "Big Bud", "qty": 400, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
+    checked = validate(conn, d, "", TODAY)
+    assert any("库存只有" in b for b in checked["blocking"])
+
+
 def test_reject(conn):
     d = draft({"product_text": "Big Bud", "qty": 1, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
     pid = submit(conn, customer_code="CUST-002", checked=validate(conn, d, "", TODAY), source_type="chat",

@@ -2,7 +2,7 @@
 
 A multi-agent app for a real fertilizer distributor: the sole official General Hydroponics distributor in Thailand. Staff paste orders from WeChat or Excel, agents turn them into draft records, the owner approves them before anything is written, and deterministic code computes reorder alerts and flags dormant customers.
 
-> Status: skeleton (repo structure, SQLite schema, sample data, `.env` loading). The agents and frontend are coming next.
+Pages: Q&A (orchestrator → inventory / CRM agents) · order entry (intake agent) · approval queue (owner only) · inventory & reorder · customers · token usage & audit log.
 
 ## Run it (Windows / macOS / Linux, Python 3.11+)
 
@@ -18,7 +18,13 @@ A multi-agent app for a real fertilizer distributor: the sole official General H
    ```
    python scripts/init_db.py
    ```
-4. **Check it.**
+4. **Run the app.**
+   ```
+   python app.py
+   ```
+   Open http://127.0.0.1:8050. Use the role switch (top right) to act as the owner (approves) or a staff member (enters orders).
+   The order-entry page has three example orders: a normal one, one with an arithmetic error, and one with a prompt-injection attack.
+5. **Check it (optional).**
    ```
    python -m pytest -q
    ```
