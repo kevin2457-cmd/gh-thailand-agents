@@ -112,6 +112,28 @@ def test_not_enough_stock_blocks_approval(conn):
     assert any("库存只有" in b for b in checked["blocking"])
 
 
+def test_duplicate_order_is_caught(conn):
+    # 员工试用时真实发生：同一张订单提交了两次
+    def submit_once():
+        d = draft({"product_text": "Big Bud", "qty": 3, "unit_price": 600, "currency": "USD"},
+                  {"product_text": "B52", "qty": 1, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
+        chk = validate(conn, d, "", TODAY, customer_code="CUST-002")
+        return chk, submit(conn, customer_code="CUST-002", checked=chk, source_type="wechat", source_text="",
+                           submitted_by="U02")
+
+    first, _ = submit_once()
+    assert not any("重复" in m for m in first["warnings"] + first["blocking"])
+    second, pid = submit_once()
+    assert any("疑似重复录单" in b for b in second["blocking"])
+    with pytest.raises(ValueError):
+        approve(conn, pid, "U01")
+    # 另一个客户原样下同样的单：只提醒，不拦
+    d = draft({"product_text": "Big Bud", "qty": 3, "unit_price": 600, "currency": "USD"},
+              {"product_text": "B52", "qty": 1, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
+    other = validate(conn, d, "", TODAY, customer_code="CUST-009")
+    assert any("可能重复" in w for w in other["warnings"]) and not any("重复" in b for b in other["blocking"])
+
+
 def test_reject(conn):
     d = draft({"product_text": "Big Bud", "qty": 1, "unit_price": 600, "currency": "USD"}, order_date="2026-10-20")
     pid = submit(conn, customer_code="CUST-002", checked=validate(conn, d, "", TODAY), source_type="chat",

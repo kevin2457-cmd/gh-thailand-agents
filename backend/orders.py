@@ -96,7 +96,44 @@ def to_usd(amount: float, currency: str | None) -> float | None:
     return amount * FX_TO_USD[currency]
 
 
-def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, today: date) -> dict:
+DUP_SAME_CUSTOMER_DAYS = 3  # 同一客户、3 天内、产品和数量完全一样 = 几乎肯定是重复录单
+
+
+def duplicate_check(conn: sqlite3.Connection, lines: list[dict], order_date: str,
+                    customer_code: str | None) -> tuple[list[str], list[str]]:
+    """员工试用时发现的问题：同一张订单被录了两次。和已有销售、待审批订单比"产品 + 数量"是否完全一样。
+    同一客户且日期相差 3 天内 -> 必须老板处理；其他完全一样的 -> 提醒（也可能是客户原样复购）。"""
+    if not lines or any(l["sku"] is None for l in lines):
+        return [], []
+    mine = {(l["sku"], l["qty"]) for l in lines}
+    try:
+        d0 = date.fromisoformat(order_date)
+    except ValueError:
+        return [], []
+    warn, block = [], []
+    sales: dict[tuple, set] = {}
+    for r in conn.execute("SELECT s.id, s.sale_date, c.code, si.sku, si.qty FROM sales s "
+                          "JOIN sale_items si ON si.sale_id = s.id JOIN customers c ON c.id = s.customer_id"):
+        sales.setdefault((r["id"], r["sale_date"], r["code"]), set()).add((r["sku"], r["qty"]))
+    others = [(f"销售单 {sid}", d, code, items) for (sid, d, code), items in sales.items()]
+    for r in conn.execute("SELECT id, payload_json FROM pending_records WHERE status = 'pending'"):
+        p = json.loads(r["payload_json"])
+        items = {(l["sku"], l["qty"]) for l in p["lines"] if l.get("sku")}
+        others.append((f"待审批 #{r['id']}", p["order_date"], p["customer"], items))
+    for ref, d, code, items in others:
+        if items != mine:
+            continue
+        same_customer = customer_code is not None and code == customer_code
+        close = abs((date.fromisoformat(d) - d0).days) <= DUP_SAME_CUSTOMER_DAYS
+        if same_customer and close:
+            block.append(f"疑似重复录单：和{ref}（{d}，{code}）的客户、产品和数量完全一样")
+        else:
+            warn.append(f"可能重复：和{ref}（{d}，{code}）的产品和数量完全一样，请确认不是同一单")
+    return warn, block
+
+
+def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, today: date,
+             customer_code: str | None = None) -> dict:
     """返回 {lines, order_date, warnings, blocking}。blocking 非空时老板必须先修正才能批准。"""
     warnings: list[str] = []
     blocking: list[str] = []
@@ -182,6 +219,10 @@ def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, toda
             calc = sum(l["qty"] * l["unit_price"] * l["discount"] for l in lines)
             if calc > 0 and abs(calc - draft.stated_total) / calc > MATH_TOLERANCE:
                 warnings.append(f"总计不对：按明细算是 {calc:,.2f} {cur}，订单写的是 {draft.stated_total:,.2f}")
+
+    dup_warn, dup_block = duplicate_check(conn, lines, order_date, customer_code)
+    warnings += dup_warn
+    blocking += dup_block
 
     hits = list(draft.suspicious_instructions) + [m.group(0) for m in _INJECTION.finditer(source_text)]
     if hits:

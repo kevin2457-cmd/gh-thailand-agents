@@ -242,8 +242,19 @@ container is planned. Rates come only from the {{REAL_APPROVED}} recorded orders
       customers who are silent for more than twice their usual gap, with their usual products and a draft message.</li>
   <li><b>Errors</b>: 3 arithmetic/recording errors worth about US$920 found in 4 months of the owner's own records (above).</li>
 </ul>
-<h3>Real user</h3>
+<h3>Real users: the owner and a sales staff member</h3>
 {{USER_QUOTE}}
+<p>A sales staff member then used it in the staff role on the real database. The audit log shows 4 real orders
+submitted in about 2 minutes (model cost $0.0003–0.0005 each), the staff role unable to approve, and the owner
+approving or rejecting all 4 within 10 seconds.</p>
+{{STAFF_QUOTE}}
+<p><b>What the real users changed (same evening).</b></p>
+<table>
+  <tr><th>Found by</th><th>Problem in real use</th><th>Fix</th></tr>
+  <tr><td>Owner</td><td>Order entry had no date field, so an undated chat order was recorded as "today"</td><td>Order-date field; if the text has its own date and they differ, the text wins and the owner is warned</td></tr>
+  <tr><td>Staff</td><td>"Risk of entering the same order twice" — the audit log confirms it: the 4 submissions were 2 orders each entered twice, and one of them has exactly the same products and quantities as an order already imported from the June report (being checked with the owner)</td><td>Duplicate check against sales and pending orders: same customer, same products and quantities within 3 days blocks approval; same products for another customer or date shows a warning</td></tr>
+  <tr><td>Staff</td><td>"The date should be a dropdown"</td><td>Date dropdown of the last 120 days, searchable (type 09-29)</td></tr>
+</table>
 <p class="muted">The owner is the primary real user (and the author). The app ran on the owner's computer with the real database
 (<code>python app.py --data real</code>); real customer names never left that computer.</p>
 

@@ -35,6 +35,16 @@ USERS = {"U01": "owner", "U02": "staff"}
 STATUSES = ("out_of_stock", "order_now", "order_soon", "ok", "no_recent_sales")
 
 
+def date_options(lang: str, days: int = 120) -> list[dict]:
+    wd = {"en": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], "zh": ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]}[lang]
+    out = []
+    for i in range(days):
+        d = date.fromordinal(date.today().toordinal() - i)
+        tag = t(lang, "today") if i == 0 else wd[d.weekday()]
+        out.append({"label": f"{d.isoformat()} · {tag}", "value": d.isoformat()})
+    return out
+
+
 def source_options(lang: str) -> list[dict]:
     return [{"label": t(lang, f"src_{v}"), "value": v} for v in ("wechat", "excel", "report", "chat")]
 
@@ -91,7 +101,7 @@ app = Dash(__name__, title="GH Thailand · Inventory + CRM Agents", suppress_cal
 server = app.server
 
 
-def header(lang: str) -> html.Div:
+def header(lang: str, role: str = "U01") -> html.Div:
     sample = is_sample()
     other = "zh" if lang == "en" else "en"
     return html.Div(className="header", children=[
@@ -105,7 +115,7 @@ def header(lang: str) -> html.Div:
             html.Span(f"{t(lang, 'today')} {today().isoformat()}", className="badge"),
             html.Div(className="role-switch", children=[
                 html.Span(t(lang, "role"), className="muted"),
-                dcc.RadioItems(id="role", value="U01", inline=True,
+                dcc.RadioItems(id="role", value=role, inline=True,
                                options=[{"label": t(lang, "owner_role"), "value": "U01"},
                                         {"label": t(lang, "staff_role"), "value": "U02"}]),
             ]),
@@ -140,8 +150,9 @@ def intake_tab(lang: str) -> html.Div:
             html.Div(className="row", children=[
                 html.Div(className="field", children=[
                     html.Label(t(lang, "date_l")),
-                    dcc.Input(id="intake-date", type="text", value=date.today().isoformat(), placeholder="2026-10-20",
-                              debounce=False, className="text-input", style={"width": "150px"}),
+                    # 员工试用反馈："年月日自己填写应该做一个下拉"：最近 120 天的下拉框，可以打字搜索（例如 09-29）
+                    dcc.Dropdown(id="intake-date", options=date_options(lang), value=date.today().isoformat(),
+                                 searchable=True, clearable=True, style={"width": "230px"}),
                 ]),
                 html.Div(className="field", style={"marginLeft": "18px"}, children=[
                     html.Label(t(lang, "source_l")),
@@ -173,6 +184,9 @@ def serve_layout() -> html.Div:
     # Dash 通过单独的 /_dash-layout 请求取布局，这个请求本身不带 ?lang=，所以也看页面地址（Referer）
     page = request.referrer or ""
     lang = "zh" if request.args.get("lang") == "zh" or "lang=zh" in page else "en"
+    # ?tab=intake 直接打开某个标签页；?role=staff 直接用员工身份（方便员工试用）
+    start_tab = next((v for v in ("intake", "approvals", "inventory", "customers", "usage") if f"tab={v}" in page), "ask")
+    start_role = "U02" if "role=staff" in page else "U01"
 
     def tab(key: str, value: str, body) -> dcc.Tab:
         return dcc.Tab(label=t(lang, key), value=value, className="tab", selected_className="tab--selected",
@@ -183,8 +197,8 @@ def serve_layout() -> html.Div:
         dcc.Store(id="chat-history", data=[]),
         dcc.Store(id="chat-pending", data=None),
         dcc.Store(id="refresh", data=0),
-        header(lang),
-        dcc.Tabs(id="tabs", value="ask", className="tabs", children=[
+        header(lang, start_role),
+        dcc.Tabs(id="tabs", value=start_tab, className="tabs", children=[
             tab("tab_ask", "ask", html.Div(chat_tab(lang), className="tab-body")),
             tab("tab_intake", "intake", html.Div(intake_tab(lang), className="tab-body")),
             tab("tab_approvals", "approvals", html.Div(className="tab-body", children=[
@@ -298,7 +312,7 @@ def customer_options(_r, current, lang):
               Input("ex-math", "n_clicks"), Input("ex-attack", "n_clicks"), prevent_initial_call=True)
 def fill_example(*_):
     # 示例订单自带日期（或没有日期时按今天），所以清空日期框，避免多一条"日期不一致"的提醒
-    return EXAMPLE_ORDERS[{"ex-normal": "normal", "ex-math": "math", "ex-attack": "attack"}[ctx.triggered_id]], ""
+    return EXAMPLE_ORDERS[{"ex-normal": "normal", "ex-math": "math", "ex-attack": "attack"}[ctx.triggered_id]], None
 
 
 def render_check(r: dict, m: dict[str, str], lang: str) -> list:

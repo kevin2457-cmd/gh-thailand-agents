@@ -223,7 +223,7 @@ async def intake(text: str, *, customer_code: str, submitted_by: str, source_typ
             elif draft.order_date != order_date:
                 date_note = (f"订单文字里的日期是 {draft.order_date}，录单时选的是 {order_date}：已按订单文字记录，"
                              f"请核对")
-        checked = validate(conn, draft, safe_text, deps.today)
+        checked = validate(conn, draft, safe_text, deps.today, customer_code=customer_code)
         if date_note:
             checked["warnings"].insert(0, date_note)
         if filtered:

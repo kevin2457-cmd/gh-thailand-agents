@@ -11,5 +11,9 @@
   "user_quote": "我感觉比较好用，因为对不同名字规格都会需要判断，并且针对销售给了多少折扣，是否低于底价，都需要被我审核",
   "user_quote_en": "I find it quite useful: it makes me decide on every different product name and size, and every sale's discount and whether it is below the floor price has to be reviewed by me.",
   "user_quote_source": "Owner, after reviewing and approving all 41 real orders in the app (24 Oct 2026)",
+  "staff_quote": "比之前的感觉是更专业了，之前直接转发老板微信，我觉得这个录单可以用。但是有重复录单的风险，同时年月日自己填写应该去做一个下拉。目前看是没有解析错的，产品这一块系统卡的很严格，我觉得很好。",
+  "staff_quote_en": "It feels more professional than before — before, I just forwarded orders to the boss on WeChat. I think this order entry is usable. But there is a risk of entering the same order twice, and the date should be a dropdown instead of typing it. So far nothing was parsed wrong; the system is very strict about products, which I think is good.",
+  "staff_role": "sales staff member",
+  "staff_quote_slide": "More professional than before — I used to just forward orders to the boss on WeChat. The system is very strict about products, which I think is good.",
   "user_change_request": "During real use the owner noticed the order-entry page had no date field (\"录入这里貌似没有日期\"); an order-date field was added the same evening."
 }

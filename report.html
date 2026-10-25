@@ -290,8 +290,19 @@ container is planned. Rates come only from the 41 recorded orders, so they are a
       customers who are silent for more than twice their usual gap, with their usual products and a draft message.</li>
   <li><b>Errors</b>: 3 arithmetic/recording errors worth about US$920 found in 4 months of the owner's own records (above).</li>
 </ul>
-<h3>Real user</h3>
+<h3>Real users: the owner and a sales staff member</h3>
 <p class='quote'>“I find it quite useful: it makes me decide on every different product name and size, and every sale&#x27;s discount and whether it is below the floor price has to be reviewed by me.”<br><span class='muted'>Original: “我感觉比较好用，因为对不同名字规格都会需要判断，并且针对销售给了多少折扣，是否低于底价，都需要被我审核”<br>— Owner, after reviewing and approving all 41 real orders in the app (24 Oct 2026)</span></p><p>During real use the owner noticed the order-entry page had no date field (&quot;录入这里貌似没有日期&quot;); an order-date field was added the same evening.</p>
+<p>A sales staff member then used it in the staff role on the real database. The audit log shows 4 real orders
+submitted in about 2 minutes (model cost $0.0003–0.0005 each), the staff role unable to approve, and the owner
+approving or rejecting all 4 within 10 seconds.</p>
+<p class='quote'>“It feels more professional than before — before, I just forwarded orders to the boss on WeChat. I think this order entry is usable. But there is a risk of entering the same order twice, and the date should be a dropdown instead of typing it. So far nothing was parsed wrong; the system is very strict about products, which I think is good.”<br><span class='muted'>Original: “比之前的感觉是更专业了，之前直接转发老板微信，我觉得这个录单可以用。但是有重复录单的风险，同时年月日自己填写应该去做一个下拉。目前看是没有解析错的，产品这一块系统卡的很严格，我觉得很好。”<br>— sales staff member, after entering real orders as staff (24 Oct 2026)</span></p>
+<p><b>What the real users changed (same evening).</b></p>
+<table>
+  <tr><th>Found by</th><th>Problem in real use</th><th>Fix</th></tr>
+  <tr><td>Owner</td><td>Order entry had no date field, so an undated chat order was recorded as "today"</td><td>Order-date field; if the text has its own date and they differ, the text wins and the owner is warned</td></tr>
+  <tr><td>Staff</td><td>"Risk of entering the same order twice" — the audit log confirms it: the 4 submissions were 2 orders each entered twice, and one of them has exactly the same products and quantities as an order already imported from the June report (being checked with the owner)</td><td>Duplicate check against sales and pending orders: same customer, same products and quantities within 3 days blocks approval; same products for another customer or date shows a warning</td></tr>
+  <tr><td>Staff</td><td>"The date should be a dropdown"</td><td>Date dropdown of the last 120 days, searchable (type 09-29)</td></tr>
+</table>
 <p class="muted">The owner is the primary real user (and the author). The app ran on the owner's computer with the real database
 (<code>python app.py --data real</code>); real customer names never left that computer.</p>
 

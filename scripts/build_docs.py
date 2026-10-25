@@ -169,6 +169,12 @@ def values() -> dict[str, str]:
         "SLIDE_QUOTE": (f"<p class='quote' style='margin-top:24px'>“{html.escape(quote_en)}”<br><small>“{html.escape(quote)}”"
                         f" — the owner, after approving all real orders</small></p>") if quote else "",
         "REAL_APPROVED": str(real.get("approved_sales", 0)),
+        "STAFF_QUOTE": (f"<p class='quote'>“{html.escape(owner['staff_quote_en'])}”<br><span class='muted'>Original: "
+                        f"“{html.escape(owner['staff_quote'])}”<br>— {html.escape(owner['staff_role'])}, after entering real "
+                        f"orders as staff (24 Oct 2026)</span></p>") if owner.get("staff_quote") else "",
+        "STAFF_SLIDE": (f"<p class='quote' style='margin-top:10px;font-size:.7em'>“{html.escape(owner['staff_quote_slide'])}”"
+                        f"<br><small>— sales staff, who also found the duplicate-entry risk (fixed the same night)</small></p>")
+                       if owner.get("staff_quote_slide") else "",
         "ORG_MONTH": f"{3 * prof['this_business']['per_user_per_month_usd']:.2f}",
         "DIAGRAM": DIAGRAM, "TOKEN_TABLE": token_table(t), "PROFILE_TABLE": profile_table(t),
         "SAFETY_TABLE": safety_table(safety), "QA_N": str(len(qa)),
