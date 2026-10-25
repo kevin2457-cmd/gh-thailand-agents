@@ -125,4 +125,14 @@
 
 > 前端按你推荐（Dash：纯 Python，python app.py 一个命令就能启动）。
 
+**Follow-up prompt：** 无（中途问了一句"我们这个有前端吗？"）
+
+---
+
+## Step 5–10：真实数据导入、Safety、Tokenomics、报告、幻灯片、交付
+
+**首次 prompt：**
+
+> 今天就做完吧，
+
 **Follow-up prompt：** 无

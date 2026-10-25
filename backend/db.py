@@ -9,7 +9,7 @@ import csv
 import sqlite3
 from pathlib import Path
 
-from backend.config import DB_PATH, SCHEMA_PATH, data_dir_for
+from backend.config import SCHEMA_PATH, active_db, data_dir_for, db_path_for
 
 # 导入顺序（按外键依赖排列）。opening_stock.csv 不是一张表，单独处理。
 TABLES = [
@@ -24,8 +24,8 @@ TABLES = [
 ]
 
 
-def connect(db_path: Path = DB_PATH) -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path)
+def connect(db_path: Path | None = None) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path or active_db())
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
@@ -73,9 +73,10 @@ def _build_stock_moves(conn: sqlite3.Connection, opening: list[dict]) -> None:
     conn.execute("DROP TABLE opening")
 
 
-def init_db(source: str = "sample", db_path: Path = DB_PATH) -> dict[str, int]:
+def init_db(source: str = "sample", db_path: Path | None = None) -> dict[str, int]:
     """重建数据库并导入数据，返回每张表的行数。"""
     src = data_dir_for(source)
+    db_path = db_path or db_path_for(source)
     missing = [f"{t}.csv" for t in TABLES + ["opening_stock"] if not (src / f"{t}.csv").exists()]
     if missing:
         raise FileNotFoundError(f"{src} 缺少文件：{', '.join(missing)}")

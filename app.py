@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 from contextlib import closing
 from datetime import date
 
@@ -18,11 +19,15 @@ from dash import ALL, Dash, Input, Output, State, ctx, dcc, html, no_update
 
 from backend import analytics, orders, runner
 from backend.catalog import CATALOG
-from backend.config import DB_PATH, UNLABELED_CODE, env_file_found
+from backend.config import UNLABELED_CODE, db_path_for, env_file_found, set_active_db
 from backend.db import connect, init_db
 
-if not DB_PATH.exists():
-    init_db("sample")
+# python app.py              -> 模拟数据（data/app.db）
+# python app.py --data real  -> 真实数据（data/real.db，只在老板电脑上）
+DATA = "real" if "--data" in sys.argv and sys.argv[sys.argv.index("--data") + 1:][:1] == ["real"] else "sample"
+set_active_db(db_path_for(DATA))
+if not db_path_for(DATA).exists():
+    init_db(DATA)
 
 USERS = {"U01": "老板", "U02": "员工"}
 STATUS_LABEL = {"out_of_stock": "已断货", "order_now": "马上下单", "order_soon": "尽快下单", "ok": "充足",
@@ -387,11 +392,17 @@ def render_approvals(_r, role, _t):
                                    className="pill " + ("ok" if r["status"] == "approved" else "bad"))),
                  html.Td(r["result_ref"] or ""), html.Td((r["reviewed_at"] or "")[:16].replace("T", " ")),
                  html.Td(r["review_note"] or "")]) for r in done]
+    clean = [r["id"] for r in pend if not json.loads(r["warnings"])]
     return [
         html.Div(className="panel", children=[
             html.H2(f"待审批（{len(pend)}）"),
             html.Div("员工提交的订单先放在这里。老板批准之后才写进数据库、扣库存；每一步都记审计日志。",
                      className="muted", style={"marginBottom": "10px"}),
+            html.Div(className="row", style={"marginBottom": "12px"}, children=[
+                html.Button(f"批准所有干净的订单（{len(clean)}）", id="approve-clean", className="btn ghost small",
+                            n_clicks=0, disabled=not is_owner or not clean),
+                html.Span("只包括没有任何警告的订单；有黄色或红色提示的要逐单看。", className="muted"),
+            ]),
             *([pending_card(r, m, is_owner) for r in pend] or [html.Div("没有待审批的订单。", className="muted")]),
         ]),
         html.Div(className="panel", children=[html.H2("最近处理"), html.Table(done_rows, className="simple")])
@@ -401,17 +412,23 @@ def render_approvals(_r, role, _t):
 
 @app.callback(Output("approval-flash", "children"), Output("refresh", "data", allow_duplicate=True),
               Input({"type": "approve", "pid": ALL}, "n_clicks"), Input({"type": "reject", "pid": ALL}, "n_clicks"),
-              Input({"type": "sku-set", "pid": ALL, "line": ALL}, "n_clicks"),
+              Input({"type": "sku-set", "pid": ALL, "line": ALL}, "n_clicks"), Input("approve-clean", "n_clicks"),
               State({"type": "sku-pick", "pid": ALL, "line": ALL}, "value"),
               State({"type": "sku-pick", "pid": ALL, "line": ALL}, "id"),
               State("role", "value"), State("refresh", "data"), prevent_initial_call=True)
-def act_on_pending(_a, _r, _s, picks, pick_ids, role, refresh):
+def act_on_pending(_a, _r, _s, _clean, picks, pick_ids, role, refresh):
     trig = ctx.triggered_id
     if not trig or not ctx.triggered or not ctx.triggered[0]["value"]:
         return no_update, no_update
     try:
         with db() as conn:
-            if trig["type"] == "approve":
+            if trig == "approve-clean":
+                ids = [r["id"] for r in conn.execute(
+                    "SELECT id, warnings FROM pending_records WHERE status = 'pending' ORDER BY id")
+                       if not json.loads(r["warnings"])]
+                done = [orders.approve(conn, pid, role, "批量批准（无警告）") for pid in ids]
+                msg = f"已批准 {len(done)} 单干净的订单，库存已更新。"
+            elif trig["type"] == "approve":
                 sale_id = orders.approve(conn, trig["pid"], role)
                 msg = f"#{trig['pid']} 已批准，写入销售单 {sale_id}，库存已更新。"
             elif trig["type"] == "reject":

@@ -120,6 +120,21 @@ def test_reject(conn):
     assert conn.execute("SELECT status FROM pending_records WHERE id = ?", (pid,)).fetchone()[0] == "rejected"
 
 
+def test_redact_keeps_long_numbers_in_order_lines():
+    # 真实报告里漏了等号："bloom 17×8500144500"，不能当成账号删掉
+    assert "8500144500" in redact("bloom 17×8500144500")
+
+
+def test_context_rules_need_no_review(conn):
+    text = "ATHENA:\n bloom 10×8500=85000\n Core 5×8500=42500"
+    d = draft({"product_text": "bloom", "qty": 10, "unit_price": 8500, "currency": "THB", "discount": 0.5},
+              {"product_text": "Core", "qty": 5, "unit_price": 8500, "currency": "THB", "discount": 0.5},
+              order_date="2026-06-25")
+    chk = validate(conn, d, text, TODAY)
+    assert [l["sku"] for l in chk["lines"]] == ["ATH-PRO-BLOOM-25LB", "ATH-PRO-CORE-25LB"]
+    assert not any("请核对" in w for w in chk["warnings"])
+
+
 def test_redact_removes_private_details():
     text = ("送货到付：\nAthena 2包 Bloom\n0811111111\nSAMPLE TRADING COMPANY LIMITED\n"
             "99/9 Village No. 1, Sample Subdistrict\nhttps://maps.app.goo.gl/abc\n账号 123-456789-0\n客户D 下单")

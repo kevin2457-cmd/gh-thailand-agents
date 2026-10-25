@@ -53,7 +53,7 @@ CATALOG: list[tuple[str, str, str, str, list[str]]] = [
      ["Koolbloom 粉 16lb", "Koolbloom 粉", "Dry Koolbloom"]),
     ("CYCO-SUPA-STIKY-5G", "Cyco Supa Stiky", "5G", "Cyco",
      ["Cyco Supa Sticky", "Supa Sticky", "(CYCO) supa sticky 5 gal", "Cyco 糖"]),
-    ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "紫粉", "三朵花"]),
+    ("GROTEK-MONSTER-BLOOM", "Monster Bloom", "", "Grotek", ["Monster Bloom", "Monster", "紫粉", "三朵花"]),
     # 老板确认：同名的都是同规格，盘点里的 Weight Max 10kg 合并进来
     ("GROTEK-WEIGHTMAX", "WeightMax", "", "Grotek", ["Weight Max", "WeightMax", "Weight Max 10kg", "鸦片粉"]),
     ("BOTANICARE-CALMAG-PLUS-6GAL", "Cal-Mag Plus", "6gal", "Botanicare", ["Cal Mg Plus", "Cal Mg", "Cal mag", "Cal Mag", "番茄", "番茄水"]),
@@ -99,7 +99,9 @@ AMBIGUOUS: dict[str, list[str]] = {k: v for k, v in _NAME_SKUS.items() if len(v)
 # 有歧义的俗称和写法（不带规格）：例如 "香味" 可能是 6gal 也可能是 1gal
 for _a, _skus in {"Floralicious": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
                   "香味": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
-                  "向日葵": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"]}.items():
+                  "向日葵": ["GH-FLORALICIOUS-PLUS-6GAL", "GH-FLORALICIOUS-PLUS-1GAL"],
+                  # 杀虫剂 = Trishield（产品照片上写着"杀除昆虫"），但有 1G 和 5G 两种
+                  "杀虫剂": ["TRISHIELD-1G", "TRISHIELD-5G"]}.items():
     AMBIGUOUS[norm(_a)] = _skus
 
 ALIAS_TO_SKU: dict[str, str] = {}
@@ -112,6 +114,24 @@ for _sku, _name, _size, _brand, _aliases in CATALOG:
         if _k in ALIAS_TO_SKU and ALIAS_TO_SKU[_k] != _sku:
             raise ValueError(f"别名 {_a!r} 同时指向 {ALIAS_TO_SKU[_k]} 和 {_sku}")
         ALIAS_TO_SKU[_k] = _sku
+
+
+# 只在特定上下文里有意义的短名字（老板确认的规则，和 prompts/intake.md 里的说明一致）
+_ATHENA_CONTEXT = re.compile(r"athena|8500|8900|13000", re.I)
+_ATHENA_SHORT = {"grow": "ATH-PRO-GROW-25LB", "bloom": "ATH-PRO-BLOOM-25LB", "core": "ATH-PRO-CORE-25LB",
+                 "balance": "ATH-BALANCE-25LB", "fade": "ATH-FADE-5G", "cleanse": "ATH-CLEANSE-5G"}
+_TRICOLOR_SHORT = {"红": "FP-BLOOM-25LB", "绿": "FP-GROW-25LB", "黑": "FP-CAMICRO-25LB", "花": "FP-LATEBLOOM-25LB"}
+
+
+def context_lookup(raw_name: str, order_text: str) -> str | None:
+    """ATHENA 订单里的 Grow/Bloom/Core……= Athena Pro；三色粉订单里的 红/绿/黑/花 = FloraPro。其他情况返回 None。"""
+    k = norm(raw_name)
+    k = re.sub(r"(25lb|5g|包|桶|bags?|tons?|x)$", "", k)
+    if k in _ATHENA_SHORT and _ATHENA_CONTEXT.search(order_text):
+        return _ATHENA_SHORT[k]
+    if k in _TRICOLOR_SHORT and "三色" in order_text:
+        return _TRICOLOR_SHORT[k]
+    return None
 
 
 def lookup(raw_name: str) -> str | None:

@@ -13,7 +13,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from backend.catalog import candidates, lookup
+from backend.catalog import candidates, context_lookup, lookup
 from backend.config import FX_TO_USD, UNLABELED_CODE
 
 Currency = Literal["USD", "THB", "CNY", "USDT"]
@@ -48,7 +48,9 @@ class OrderDraft(BaseModel):
 _PHONE = re.compile(r"(?<!\d)(\+?66|0)\d{8,9}(?!\d)")
 _URL = re.compile(r"https?://\S+")
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
-_ACCOUNT = re.compile(r"(?<!\d)\d{3}-\d{6}-\d(?!\d)|(?<!\d)\d{10,}(?!\d)")
+# 只认带横线的账号格式（例如 123-456789-0）。不删一长串数字：订单里漏了等号时
+# "17×8500144500" 也是一长串数字，删掉会让模型看不到价格（真实数据里发生过）
+_ACCOUNT = re.compile(r"(?<!\d)\d{3}-\d{1,6}-\d{1,6}(-\d)?(?!\d)")
 _ADDRESS_HINT = re.compile(r"(Subdistrict|District|Province|Village|Road|Soi|ตำบล|อำเภอ|แขวง|เขต|จังหวัด|"
                            r"ประเทศไทย|กรุงเทพ|ถ\.|เลขที่|COMPANY|LIMITED|จำกัด)", re.I)
 
@@ -83,6 +85,11 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def stocktake_date(conn: sqlite3.Connection) -> str | None:
+    """最后一次盘点（期初库存）的日期。整个仓库一起盘点，所以库存为 0 的产品也适用这个日期。"""
+    return conn.execute("SELECT MAX(move_date) FROM stock_moves WHERE reason = 'opening'").fetchone()[0]
+
+
 def to_usd(amount: float, currency: str | None) -> float | None:
     if currency is None:
         return None
@@ -110,8 +117,7 @@ def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, toda
 
     products = {r["sku"]: dict(r) for r in conn.execute("SELECT sku, name, size, floor_price_usd FROM products")}
     stock = {r["sku"]: r["on_hand"] for r in conn.execute("SELECT sku, on_hand FROM v_stock")}
-    opening = {r["sku"]: r["d"] for r in conn.execute(
-        "SELECT sku, MAX(move_date) AS d FROM stock_moves WHERE reason = 'opening' GROUP BY sku")}
+    stocktake = stocktake_date(conn)
     lines = []
     seen = set()
     for ln in draft.lines:
@@ -119,6 +125,8 @@ def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, toda
         sku = lookup(ln.product_text)
         cands = candidates(ln.product_text)
         inferred = False
+        if sku is None and not cands:
+            sku = context_lookup(ln.product_text, source_text)  # 老板确认过的上下文规则，不算猜
         if sku is None and not cands and ln.sku in products:
             # 目录里查不到原文，但模型根据上下文给了一个有效 SKU（例如"三色粉"里的"红"）：接受，但要老板核对
             sku, inferred = ln.sku, True
@@ -161,7 +169,7 @@ def validate(conn: sqlite3.Connection, draft: OrderDraft, source_text: str, toda
             elif sku and products[sku]["floor_price_usd"] and unit_usd < products[sku]["floor_price_usd"] * 0.95:
                 warnings.append(f"「{ln.product_text}」实收 ${unit_usd:,.2f}，低于底价 ${products[sku]['floor_price_usd']:,.2f}")
 
-        if sku and (opening.get(sku) is None or order_date > opening[sku]) and ln.qty > stock.get(sku, 0):
+        if sku and (stocktake is None or order_date > stocktake) and ln.qty > stock.get(sku, 0):
             # 库存不够时不能批准（否则库存变负数）：老板要先核对实物库存或修改数量
             blocking.append(f"{sku} 库存只有 {stock.get(sku, 0)}，这单要 {ln.qty}：请先核对库存或修改数量")
         lines.append(line)
@@ -282,9 +290,8 @@ def approve(conn: sqlite3.Connection, pending_id: int, user_id: str, note: str =
                 "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (sale_id, l["sku"], l["qty"], l["unit_price"] or 0, l["currency"] or "USD", l["discount"],
                  l.get("unit_price_usd")))
-            opening = conn.execute("SELECT MAX(move_date) FROM stock_moves WHERE sku = ? AND reason = 'opening'",
-                                   (l["sku"],)).fetchone()[0]
-            if opening is None or p["order_date"] > opening:  # 盘点之前的销售已经包含在盘点数里
+            stocktake = stocktake_date(conn)
+            if stocktake is None or p["order_date"] > stocktake:  # 盘点之前的销售已经包含在盘点数里
                 conn.execute("INSERT INTO stock_moves (sku, move_date, qty_change, reason, ref_id) "
                              "VALUES (?, ?, ?, 'sale', ?)", (l["sku"], p["order_date"], -l["qty"], sale_id))
         conn.execute("UPDATE pending_records SET status = 'approved', reviewed_by = ?, reviewed_at = ?, "

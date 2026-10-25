@@ -1,0 +1,248 @@
+[
+  {
+    "question": "哪些产品需要马上补货？",
+    "seconds": 1.6,
+    "answer": "需要马上补货的产品：\n\n- **Cal-Mag Plus（6gal）**：现货 **0**；建议下单日期 **2026-08-13**\n- **Big Bud**：现货 **5**；建议下单日期 **2026-08-24**\n- **Floralicious Plus（6gal）**：现货 **13**；建议下单日期 **2026-10-09**\n- **Liquid KoolBloom（6gal）**：现货 **11**；建议下单日期 **2026-10-09**",
+    "tools": [
+      [
+        "inventory",
+        "get_reorder_report"
+      ],
+      [
+        "orchestrator",
+        "ask_inventory_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-8a3299c4",
+      "total": {
+        "requests": 4,
+        "input_tokens": 5099,
+        "cached_tokens": 0,
+        "output_tokens": 486,
+        "cost_usd": 0.0007529
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 723,
+          "cached_tokens": 0,
+          "output_tokens": 208,
+          "cost_usd": 0.0001763
+        },
+        "inventory": {
+          "requests": 2,
+          "input_tokens": 4376,
+          "cached_tokens": 0,
+          "output_tokens": 278,
+          "cost_usd": 0.0005766
+        }
+      }
+    }
+  },
+  {
+    "question": "下一个货柜（大约 60 天后到）应该多订哪些产品？",
+    "seconds": 13.5,
+    "answer": "下一个货柜约 **60 天后**到，建议优先追加：\n\n1. **Cal-Mag Plus（6gal）**：现货为零，优先补货；报告建议 **2026-08-13** 前下单。\n2. **Big Bud**：现货 **5**，覆盖约 **-1.9 天**；建议 **2026-08-24** 前下单。\n3. **Floralicious Plus（6gal）**：现货 **13**，覆盖约 **45.7 天**；建议 **2026-10-09** 前下单。\n4. **Liquid KoolBloom（6gal）**：现货 **11**，覆盖约 **45 天**；建议 **2026-10-09** 前下单。\n5. **Monster Bloom**：现货 **37**，覆盖约 **65.9 天**，可排在以上产品之后；建议 **2026-10-29** 前下单。\n\n报告没有提供建议订货数量。",
+    "tools": [
+      [
+        "inventory",
+        "get_reorder_report"
+      ],
+      [
+        "orchestrator",
+        "ask_inventory_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-9d6a663b",
+      "total": {
+        "requests": 4,
+        "input_tokens": 5268,
+        "cached_tokens": 0,
+        "output_tokens": 1025,
+        "cost_usd": 0.0010393
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 880,
+          "cached_tokens": 0,
+          "output_tokens": 332,
+          "cost_usd": 0.000254
+        },
+        "inventory": {
+          "requests": 2,
+          "input_tokens": 4388,
+          "cached_tokens": 0,
+          "output_tokens": 693,
+          "cost_usd": 0.0007853
+        }
+      }
+    }
+  },
+  {
+    "question": "哪些老客户很久没下单了？",
+    "seconds": 5.6,
+    "answer": "以下老客户已达到系统的沉默判定条件（系统未提供客户姓名）：\n\n| 客户代码 | 最近下单时间 |\n|---|---|\n| CUST-006 | 2026-06-27 |\n| CUST-038 | 2026-07-21 |\n| CUST-004 | 2026-06-30 |\n| CUST-005 | 2026-08-21 |\n| CUST-001 | 2026-08-14 |\n| CUST-039 | 2026-07-20 |",
+    "tools": [
+      [
+        "crm",
+        "get_dormant_customers"
+      ],
+      [
+        "orchestrator",
+        "ask_crm_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-26fdf34a",
+      "total": {
+        "requests": 4,
+        "input_tokens": 2074,
+        "cached_tokens": 0,
+        "output_tokens": 399,
+        "cost_usd": 0.00040689999999999997
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 724,
+          "cached_tokens": 0,
+          "output_tokens": 190,
+          "cost_usd": 0.0001674
+        },
+        "crm": {
+          "requests": 2,
+          "input_tokens": 1350,
+          "cached_tokens": 0,
+          "output_tokens": 209,
+          "cost_usd": 0.0002395
+        }
+      }
+    }
+  },
+  {
+    "question": "最近 30 天卖得最好的 5 个产品是什么，销售额多少？",
+    "seconds": 5.6,
+    "answer": "最近30天按销售额排名前 5 的产品（美元）：\n\n1. Athena Pro Core：$40,835.20\n2. Athena Pro Bloom：$18,763.12\n3. Athena Pro Balance：$12,126.48\n4. FloraPro Bloom：$11,261.65\n5. FloraPro Late Bloom：$8,810.21",
+    "tools": [
+      [
+        "inventory",
+        "get_sales_summary"
+      ],
+      [
+        "orchestrator",
+        "ask_inventory_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-3648f632",
+      "total": {
+        "requests": 4,
+        "input_tokens": 2254,
+        "cached_tokens": 0,
+        "output_tokens": 289,
+        "cost_usd": 0.0003699
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 688,
+          "cached_tokens": 0,
+          "output_tokens": 125,
+          "cost_usd": 0.0001313
+        },
+        "inventory": {
+          "requests": 2,
+          "input_tokens": 1566,
+          "cached_tokens": 0,
+          "output_tokens": 164,
+          "cost_usd": 0.0002386
+        }
+      }
+    }
+  },
+  {
+    "question": "给最久没下单的客户写一条跟进话术。",
+    "seconds": 6.1,
+    "answer": "最久未下单的客户是 **CUST-006**，已 **119 天**未下单。\n\n跟进话术：您好，最近还需要补货 BioRoot、Cyco Supa Stiky 或 FloraPro Late Bloom 吗？如果需要，欢迎告诉我您这次的需求。",
+    "tools": [
+      [
+        "crm",
+        "get_dormant_customers"
+      ],
+      [
+        "orchestrator",
+        "ask_crm_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-05cdbdd1",
+      "total": {
+        "requests": 4,
+        "input_tokens": 2076,
+        "cached_tokens": 0,
+        "output_tokens": 336,
+        "cost_usd": 0.0003756
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 687,
+          "cached_tokens": 0,
+          "output_tokens": 128,
+          "cost_usd": 0.0001327
+        },
+        "crm": {
+          "requests": 2,
+          "input_tokens": 1389,
+          "cached_tokens": 0,
+          "output_tokens": 208,
+          "cost_usd": 0.00024290000000000002
+        }
+      }
+    }
+  },
+  {
+    "question": "Monster Bloom 还剩多少？会不会在下一批货到之前断货？",
+    "seconds": 22.8,
+    "answer": "Monster Bloom 现有 37 件，在途 0 件。按当前销售速度，约可覆盖 65.9 天；预计下一批货到之前不会断货。建议在 2026 年 10 月 29 日前安排补货。",
+    "tools": [
+      [
+        "inventory",
+        "get_reorder_report"
+      ],
+      [
+        "orchestrator",
+        "ask_inventory_agent"
+      ]
+    ],
+    "usage": {
+      "run_id": "ask-2026-10-24-20a6c838",
+      "total": {
+        "requests": 4,
+        "input_tokens": 5048,
+        "cached_tokens": 0,
+        "output_tokens": 201,
+        "cost_usd": 0.0006053
+      },
+      "per_agent": {
+        "orchestrator": {
+          "requests": 2,
+          "input_tokens": 690,
+          "cached_tokens": 0,
+          "output_tokens": 95,
+          "cost_usd": 0.00011649999999999999
+        },
+        "inventory": {
+          "requests": 2,
+          "input_tokens": 4358,
+          "cached_tokens": 0,
+          "output_tokens": 106,
+          "cost_usd": 0.0004888000000000001
+        }
+      }
+    }
+  }
+]

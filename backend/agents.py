@@ -23,7 +23,7 @@ from pydantic_ai.exceptions import ModelHTTPError
 
 from backend import analytics
 from backend.catalog import CATALOG, candidates, lookup
-from backend.config import DB_PATH, PROMPTS_DIR
+from backend.config import PROMPTS_DIR, active_db
 from backend.db import connect
 from backend.llm import UsageRecorder, current_agent, get_model
 from backend.orders import OrderDraft, audit, known_customer_names, redact, submit, validate
@@ -173,8 +173,9 @@ def new_run_id(kind: str) -> str:
     return f"{kind}-{date.today().isoformat()}-{uuid.uuid4().hex[:8]}"
 
 
-async def ask(question: str, *, today: date | None = None, db_path: Path = DB_PATH) -> dict:
+async def ask(question: str, *, today: date | None = None, db_path: Path | None = None) -> dict:
     """老板问答：协调 agent -> 库存 / CRM agent。返回回答、工具调用记录、token 用量。"""
+    db_path = db_path or active_db()
     deps = Deps(db_path=db_path, today=today or date.today(), run_id=new_run_id("ask"))
     conn = connect(db_path)
     try:
@@ -190,8 +191,9 @@ async def ask(question: str, *, today: date | None = None, db_path: Path = DB_PA
 
 
 async def intake(text: str, *, customer_code: str, submitted_by: str, source_type: str = "wechat",
-                 today: date | None = None, db_path: Path = DB_PATH, hint: str = "") -> dict:
+                 today: date | None = None, db_path: Path | None = None, hint: str = "") -> dict:
     """录单：脱敏 -> 录单 agent 解析 -> 代码校验 -> 写入待审批队列。返回待审批编号、校验结果、用量。"""
+    db_path = db_path or active_db()
     deps = Deps(db_path=db_path, today=today or date.today(), run_id=new_run_id("intake"))
     conn = connect(db_path)
     try:

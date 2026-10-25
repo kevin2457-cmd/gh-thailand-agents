@@ -22,7 +22,24 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 SAMPLE_DIR = DATA_DIR / "sample"
 REAL_DIR = DATA_DIR / "real"
-DB_PATH = DATA_DIR / "app.db"
+DB_PATH = DATA_DIR / "app.db"          # 模拟数据库（老师从 fresh clone 运行时用这个）
+REAL_DB_PATH = DATA_DIR / "real.db"    # 真实数据库（只在老板电脑上，gitignored）
+_active_db = DB_PATH
+
+
+def db_path_for(source: str) -> Path:
+    return REAL_DB_PATH if source == "real" else DB_PATH
+
+
+def set_active_db(path: Path) -> None:
+    global _active_db
+    _active_db = path
+
+
+def active_db() -> Path:
+    return _active_db
+
+
 SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 EVIDENCE_DIR = ROOT_DIR / "output" / "evidence"
 

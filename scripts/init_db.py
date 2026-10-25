@@ -2,7 +2,7 @@
 
 用法：
     python scripts/init_db.py                 # 默认用 data/sample/ 的模拟数据
-    python scripts/init_db.py --source real   # 用 data/real/ 的真实数据（只在本机）
+    python scripts/init_db.py --source real   # 用 data/real/ 的真实数据，建成 data/real.db（只在本机）
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from backend.config import DB_PATH, DEFAULT_DATA_SOURCE, env_file_found  # noqa: E402
+from backend.config import DEFAULT_DATA_SOURCE, db_path_for, env_file_found  # noqa: E402
 from backend.db import connect, init_db  # noqa: E402
 
 
@@ -26,11 +26,11 @@ def main() -> None:
     print(f"数据源: data/{args.source}/")
 
     counts = init_db(args.source)
-    print(f"已重建 {DB_PATH}")
+    print(f"已重建 {db_path_for(args.source)}")
     for table, n in counts.items():
         print(f"  {table:<15} {n:>6}")
 
-    conn = connect()
+    conn = connect(db_path_for(args.source))
     negative = conn.execute("SELECT sku, on_hand FROM v_stock WHERE on_hand < 0").fetchall()
     conn.close()
     if negative:
