@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GH Thailand Inventory + CRM Agents — Final Report</title>
 <style>
-  :root { --ink:#1b2a1e; --muted:#5e6f61; --line:#dbe8d7; --pink:#2e7d32; --pink-soft:#e8f5e9; --dark:#ffffff; }
+  :root { --ink:#1b2a1e; --muted:#5e6f61; --line:#e2d8c3; --pink:#2e7d32; --pink-soft:#e8f5e9; --dark:#ffffff; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: "Inter","Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink);
-         line-height:1.6; font-size:15.5px; background:#f4f9f2; }
-  .page { max-width: 900px; margin: 0 auto; padding: 48px 40px 80px; background:#fff; }
+         line-height:1.6; font-size:15.5px; background:#f3ecdc; }
+  .page { max-width: 900px; margin: 24px auto; padding: 48px 40px 80px; background:#fff; border: 1px solid #e2d8c3;
+          border-radius: 14px; box-shadow: 0 4px 18px rgba(90, 70, 30, 0.08); }
   h1 { font-size: 30px; margin: 0 0 6px; line-height:1.2; }
   h2 { font-size: 21px; margin: 44px 0 10px; padding-top: 10px; border-top: 3px solid var(--pink); }
   h3 { font-size: 16.5px; margin: 24px 0 6px; }
@@ -19,7 +20,7 @@
   .links a { color: var(--pink); }
   table { width:100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
   th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
-  th { background: #eef6ec; font-weight: 600; }
+  th { background: #f6f0e2; font-weight: 600; }
   td.n, th.n { text-align: right; white-space: nowrap; }
   .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
   .kpi { border:1px solid var(--line); border-radius: 12px; padding: 10px 12px; background:#fff; }
@@ -37,7 +38,7 @@
   .ok { background:#e2f7ee; color:#11734d; } .bad { background:#fde3e8; color:#a3123a; }
   .diagram { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--dark); }
   @page { size: A4; margin: 14mm 12mm; }
-  @media print { body { background:#fff; font-size: 13.5px; } .page { padding: 0; max-width: none; } h2 { break-after: avoid; margin-top: 26px; }
+  @media print { body { background:#fff; font-size: 13.5px; } .page { padding: 0; max-width: none; margin: 0; border: none; box-shadow: none; } h2 { break-after: avoid; margin-top: 26px; }
                  figure img { max-width: 78%; margin: 0 auto; } figcaption { text-align: center; }
                  table { font-size: 12.5px; } .diagram { max-width: 92%; display: block; margin: 0 auto; }
                  figure, table, .kpis { break-inside: avoid; } }

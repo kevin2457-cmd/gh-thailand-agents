@@ -38,7 +38,7 @@ def load(name: str) -> dict | list:
 DIAGRAM = """<svg class="diagram" viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, PingFang SC, sans-serif">
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
     <path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
-  <rect width="900" height="430" fill="#ffffff" stroke="#dbe8d7"/>
+  <rect width="900" height="430" fill="#ffffff" stroke="#e2d8c3"/>
   <text x="20" y="30" fill="#5e6f61" font-size="13">ORDER ENTRY (staff)</text>
   <g font-size="13" fill="#1b2a1e">
     <rect x="20" y="45" width="130" height="58" rx="10" fill="#f7fbf6" stroke="#dbe8d7"/>

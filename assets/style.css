@@ -1,9 +1,9 @@
 /* GH Thailand agents — green & white theme with cannabis-leaf accents */
 :root {
-  --bg: #f4f9f2;
+  --bg: #f3ecdc;
   --panel: #ffffff;
-  --panel-2: #f7fbf6;
-  --line: #dbe8d7;
+  --panel-2: #faf6ec;
+  --line: #e2d8c3;
   --text: #1b2a1e;
   --muted: #5e6f61;
   --green: #2e7d32;
@@ -25,11 +25,11 @@ body {
   line-height: 1.55;
   background:
     url("/assets/leaf.svg") no-repeat right -60px bottom -40px / 420px auto fixed,
-    radial-gradient(1000px 520px at 0% -10%, rgba(67, 160, 71, 0.12), transparent 60%),
+    radial-gradient(1000px 520px at 0% -10%, rgba(67, 160, 71, 0.08), transparent 60%),
     var(--bg);
 }
 body::after { /* keep the big background leaf faint */
-  content: ""; position: fixed; inset: 0; pointer-events: none; background: rgba(244, 249, 242, 0.88); z-index: -1;
+  content: ""; position: fixed; inset: 0; pointer-events: none; background: rgba(243, 236, 220, 0.86); z-index: -1;
 }
 a { color: var(--green); }
 
@@ -59,7 +59,8 @@ a.badge.lang-switch:hover { background: rgba(255, 255, 255, 0.25); }
 .field input[type=radio] { accent-color: var(--green); }
 
 /* tabs */
-.tabs { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.tabs { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(90, 70, 30, 0.06); }
 .tab { background: transparent !important; color: var(--muted) !important; border: none !important;
   border-bottom: 3px solid transparent !important; padding: 11px 14px !important; font-weight: 600; }
 .tab--selected { color: var(--green-dark) !important; border-bottom: 3px solid var(--green) !important;
@@ -68,7 +69,7 @@ a.badge.lang-switch:hover { background: rgba(255, 255, 255, 0.25); }
 
 /* panels */
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
-  box-shadow: 0 1px 3px rgba(27, 94, 32, 0.05); }
+  box-shadow: 0 2px 8px rgba(90, 70, 30, 0.07); }
 .panel + .panel { margin-top: 14px; }
 .panel h2 { font-size: 16px; margin: 0 0 12px; color: var(--green-dark); display: flex; align-items: center; gap: 8px; }
 .panel h2::before { content: ""; width: 18px; height: 18px; flex: none; background: url("/assets/leaf.svg") no-repeat center / contain; }
@@ -150,8 +151,8 @@ button.dash-dropdown svg, button.dash-dropdown path { color: var(--green) !impor
 
 table.simple { width: 100%; border-collapse: collapse; font-size: 14px; }
 table.simple th { text-align: left; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); padding: 8px 6px; }
-table.simple td { border-bottom: 1px solid #eef4ec; padding: 8px 6px; vertical-align: top; }
-table.simple tr:hover td { background: #fafdf9; }
+table.simple td { border-bottom: 1px solid #efe8da; padding: 8px 6px; vertical-align: top; }
+table.simple tr:hover td { background: #fcf9f2; }
 .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .pill.out_of_stock, .pill.bad { background: #fdecea; color: var(--bad); }
 .pill.order_now { background: #fff1e0; color: #c25e00; }
