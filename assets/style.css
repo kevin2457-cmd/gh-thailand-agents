@@ -205,3 +205,17 @@ table.simple tr:hover td { background: rgba(212, 175, 55, 0.04); }
 .dash-dropdown-placeholder, .dash-dropdown-value.dash-dropdown-placeholder { color: var(--gold) !important; opacity: 0.85; }
 .dash-dropdown-clear, .dash-dropdown-clear svg { color: var(--gold-2) !important; fill: var(--gold-2) !important; }
 input::placeholder, textarea::placeholder { color: var(--gold); opacity: 0.6; }
+
+/* Dash 组件自带的文字颜色（深蓝）全部换成金色：多选计数、占位提示、清除按钮、箭头、选项、日期等 */
+:root, .dash-dropdown, .dash-dropdown-content {
+  --Dash-Text-Primary: var(--gold-2);
+  --Dash-Text-Strong: var(--gold-2);
+  --Dash-Text-Weak: var(--gold);
+  --Dash-Text-Disabled: var(--gold-dark);
+  --Dash-Fill-Interactive-Strong: var(--gold);
+}
+.dash-dropdown-value-count, .dash-dropdown-value-item, .dash-dropdown-trigger-icon, .dash-dropdown-search-icon,
+.dash-dropdown-action-button { color: var(--gold-2) !important; }
+.dash-dropdown-value-count { font-weight: 700; }
+.dash-dropdown-search-container, .dash-dropdown-search { background: #0d0b06 !important; color: var(--gold-2) !important;
+  border-color: var(--gold-dark) !important; }
