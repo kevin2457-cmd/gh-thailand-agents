@@ -8,6 +8,8 @@
     "stockouts": "\"many, countless\"; ≈ US$30,000 lost (last 3 months)",
     "lost_customers": "7–8"
   },
-  "user_quote": "",
-  "user_quote_source": "Owner, after using the app with the real database"
+  "user_quote": "我感觉比较好用，因为对不同名字规格都会需要判断，并且针对销售给了多少折扣，是否低于底价，都需要被我审核",
+  "user_quote_en": "I find it quite useful: it makes me decide on every different product name and size, and every sale's discount and whether it is below the floor price has to be reviewed by me.",
+  "user_quote_source": "Owner, after reviewing and approving all 41 real orders in the app (24 Oct 2026)",
+  "user_change_request": "During real use the owner noticed the order-entry page had no date field (\"录入这里貌似没有日期\"); an order-date field was added the same evening."
 }

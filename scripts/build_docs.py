@@ -139,7 +139,10 @@ def values() -> dict[str, str]:
     errors = fc.get("line_math_mismatch", 0) + fc.get("total_mismatch", 0) + fc.get("below_floor_price", 0)
     b = owner["baseline"]
     quote = owner.get("user_quote", "").strip()
-    user_quote = (f"<p class='quote'>“{html.escape(quote)}”<br><span class='muted'>— {html.escape(owner['user_quote_source'])}</span></p>"
+    quote_en = owner.get("user_quote_en", "").strip()
+    user_quote = (f"<p class='quote'>“{html.escape(quote_en)}”<br><span class='muted'>Original: “{html.escape(quote)}”"
+                  f"<br>— {html.escape(owner['user_quote_source'])}</span></p>"
+                  + (f"<p>{html.escape(owner['user_change_request'])}</p>" if owner.get("user_change_request") else "")
                   if quote else "<p class='note'>Owner feedback after real use: <i>to be added after the real-use session.</i></p>")
     return {
         "REPO_URL": owner["repo_url"],
@@ -163,8 +166,10 @@ def values() -> dict[str, str]:
         "B_LOOKUP": b["lookup"], "B_STOCKOUTS": b["stockouts"], "B_LOST_CUSTOMERS": b["lost_customers"],
         "USER_QUOTE": user_quote, "QUOTE_TEXT": html.escape(quote) if quote else "",
         "B_STOCKOUTS_SHORT": owner.get("stockouts_short", "$30k"),
-        "SLIDE_QUOTE": (f"<p class='quote' style='margin-top:24px'>“{html.escape(quote)}”<br><small>— the owner, after "
-                        f"using it with the real database</small></p>") if quote else "",
+        "SLIDE_QUOTE": (f"<p class='quote' style='margin-top:24px'>“{html.escape(quote_en)}”<br><small>“{html.escape(quote)}”"
+                        f" — the owner, after approving all real orders</small></p>") if quote else "",
+        "REAL_APPROVED": str(real.get("approved_sales", 0)),
+        "ORG_MONTH": f"{3 * prof['this_business']['per_user_per_month_usd']:.2f}",
         "DIAGRAM": DIAGRAM, "TOKEN_TABLE": token_table(t), "PROFILE_TABLE": profile_table(t),
         "SAFETY_TABLE": safety_table(safety), "QA_N": str(len(qa)),
         **{f"IMG_{n:02d}": img(f) for n, f in enumerate(sorted(p.name for p in SHOTS.glob("*.jpg")), 1)},

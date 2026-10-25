@@ -117,6 +117,10 @@ app does differently:</p>
   <tr><td><b>Inventory</b></td><td>Stock, sales, what to reorder and by when</td><td><code>get_reorder_report</code>, <code>get_stock</code>, <code>get_sales_summary</code></td></tr>
   <tr><td><b>CRM</b></td><td>Dormant customers, customer history, follow-up WeChat messages</td><td><code>get_dormant_customers</code>, <code>get_customer_history</code></td></tr>
 </table>
+<p><b>Interface.</b> One Dash page with six tabs (Ask, Order entry, Approvals, Inventory &amp; reorder, Customers,
+Usage &amp; audit) and an owner/staff role switch. The UI is in <b>English by default</b> and in Chinese with one click
+(<code>?lang=zh</code>) for the owner and staff; validation messages are translated too. Order entry has three
+built-in examples (normal, arithmetic error, injection attack) so a newcomer can see every path in a minute.</p>
 <p><b>Code, not agents, does everything that must be right:</b> redaction before the model; re-checking every SKU
 against the catalog; line and total arithmetic; floor price; stock; quantity limits; injection phrases; the approval,
 the write, and the audit log. No agent has a write tool.</p>
@@ -155,6 +159,10 @@ The numbers below come from {{INTAKE_RUNS}} order-entry runs ({{REAL_ORDERS}} on
 <b>${{PROFILE_THIS}} per user per month</b> in model fees; even a busy seat is ${{PROFILE_HEAVY}}. Importing the whole
 June–October history ({{REAL_ORDERS}} orders) cost <b>${{IMPORT_COST}}</b>. At 10,000 busy users the bill is about
 ${{HEAVY_10K}}/month, so the real costs at scale are hosting and support, not tokens.</p>
+<p><b>Whole organization today</b> (owner + 2 staff seats): model fees about ${{ORG_MONTH}}/month measured, plus hosting if it
+moves off the owner's PC (a small cloud VM, roughly US$5–10/month — an estimate, not measured). Against the owner's
+estimate of US$30,000 lost to stockouts in three months, the system pays for itself if it prevents a few hundred
+dollars of lost sales a year.</p>
 <h3>Cost-cutting steps and their trade-offs</h3>
 <ul>
   <li><b>Prompt caching</b>: the intake agent's instructions and the {{CATALOG_SIZE}}-SKU catalog form a fixed ~5k-token prefix with a
@@ -203,11 +211,22 @@ ${{HEAVY_10K}}/month, so the real costs at scale are hosting and support, not to
   <tr><td>Order of 3 Sep missing from the Word report</td><td class="n">US$1,778</td><td>WeChat screenshot</td></tr>
   <tr><td>Lines sold below the suggested floor price (from the container price sheets)</td><td class="n">{{BELOW_FLOOR}} lines</td><td>Code check</td></tr>
 </table>
+<p>The owner then reviewed and approved all {{REAL_APPROVED}} orders one by one in the app, choosing the two missing sizes
+himself (杀虫剂 → Trishield 5G, 向日葵 → Floralicious Plus 6gal). The audit log shows the whole review took
+<b>under 2 minutes</b> (first to last approval: 1 min 52 s). Copying the same 41 orders by hand at the owner's
+2 minutes each is about 80 minutes. The reorder plan now runs on real sales:</p>
+<figure><img src="{{IMG_08}}" alt="Real reorder plan"><figcaption>Figure 8 — Reorder plan on the real database (English UI): 919 units on hand at the 24 Oct
+stocktake, 1,376 in transit; 10 products are out of stock or must be ordered now, and the code flags that they stay out
+until the October container lands on 14 Dec.</figcaption></figure>
+<p>The same page shows the opposite risk too: some in-transit quantities are far above recent demand (for example
+160 bags of FloraPro Late Bloom against about 0.07 bags/day in the recorded orders), which is worth a look before the next
+container is planned. Rates come only from the {{REAL_APPROVED}} recorded orders, so they are a floor, not a forecast.</p>
 <h3>Time and money (sources stated)</h3>
 <ul>
-  <li><b>Order entry</b>: owner's baseline {{B_MIN_PER_ORDER}} per order by hand into Word; with the app the parse takes about
-      6–13 seconds (measured in the UI) and the owner reviews a pre-filled card. The bigger gain is that the record is now
-      structured: stock, history and reorder come for free.</li>
+  <li><b>Order entry</b>: owner's baseline {{B_MIN_PER_ORDER}} per order by hand into Word (≈ 80 min for these 41 orders).
+      With the app the agent parses each order in about 6–13 seconds (measured in the UI) and the owner reviewed all 41
+      pre-filled cards in under 2 minutes (audit log). The bigger gain is that the record is now structured: stock,
+      history and reorder come for free.</li>
   <li><b>Reconciliation and stock checks</b>: {{B_HOURS_WEEK}} by the owner's estimate; stock is now the stocktake plus every
       approved movement, so "how many do we have" is one click. Estimate: most of those hours saved.</li>
   <li><b>Stockouts</b>: the owner estimates about <b>US$30,000</b> of business lost to stockouts in the last three months. With a 60-day lead time the
@@ -227,8 +246,8 @@ ${{HEAVY_10K}}/month, so the real costs at scale are hosting and support, not to
 <ul>
   <li><b>History is incomplete</b>: container files from Feb–Nov 2025 are lost, and 33 historical orders have no customer
       recorded, so customer analytics on real data starts thin; new orders are recorded with the customer from now on.</li>
-  <li><b>Reorder needs approved sales</b>: daily rates come only from approved orders; until the backlog is approved some products
-      show "no recent sales". No seasonality, MOQ, container capacity or cash-flow limits yet.</li>
+  <li><b>Reorder uses recorded sales only</b>: daily rates come from approved orders (41 so far, June–October), so products
+      with sparse history look slower than they are. No seasonality, MOQ, container capacity or cash-flow limits yet.</li>
   <li><b>Text only</b>: orders are pasted as text; reading WeChat screenshots and invoice photos directly is the next step,
       then a direct WeChat/LINE connection.</li>
   <li><b>Local, single warehouse</b>: next is a hosted version with staff logins, phone UI and backups, and an export to the

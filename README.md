@@ -20,7 +20,7 @@ Staff paste orders straight from WeChat, Excel or the owner's sales notes. An in
    ```
    python app.py
    ```
-   Open http://127.0.0.1:8050.
+   Open http://127.0.0.1:8050. The interface is in English by default; for Chinese, click 中文 in the header or open http://127.0.0.1:8050/?lang=zh.
 4. **Try it.**
    - **问答 (Q&A):** click an example question, for example 哪些产品需要马上补货？ The answer shows the tools used and the token cost.
    - **录单 (order entry):** switch the role (top right) to 员工 (staff) and click one of the three examples: a normal order, an order with an arithmetic error, or an order containing a prompt-injection attack. Then click 解析并提交审批.

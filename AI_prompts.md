@@ -140,3 +140,7 @@
 > 录入这里貌似没有日期
 
 > ok我马上开始。但是先不提交，我想看一下所有东西。https://github.com/Kevinyang2457/gh-thailand-agents.git
+
+> 报告里的业务数字和我记录里的 3 个错误公开：可以 / 没问题。真实使用的感受：我写好了。
+
+> https://zlisto.github.io/mgt_409_fa26/project_requirements.html 你确定一下所有打分标准都用上了吗？操作界面是否给老师提交一个英文版的？
